@@ -1,7 +1,4 @@
 ###!/usr/bin/python
-###-----------------------------------------------
-### Latest update: 2016.07.01
-###-----------------------------------------------
 import sys, os, pwd, commands
 import optparse, shlex, fnmatch, pprint
 import time
@@ -153,7 +150,7 @@ def submitHGCalProduction():
     for particle in particles:
         # in case of 'RECO', get the input file list for given particle, determine number of jobs, get also basic GSD info
         if (opt.DTIER == 'RECO'):
-            inputFilesList = getInputFileList(inPath, opt.LOCAL, commonFileNamePrefix+'*'+particle+'*.root')
+            inputFilesList = getInputFileList(inPath, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+particle+'_*.root')
             if len(inputFilesList)==0: continue
             opt.pTmin = float(inputFilesList[0].split('_Pt')[1].split('To')[0])
             opt.pTmax = float(inputFilesList[0].split('To')[1].split('_')[0])
