@@ -79,7 +79,7 @@ process.generator = cms.EDProducer("FlatRandomPtGunProducer",
         MinEta = cms.double(1.479),
         MinPhi = cms.double(-3.14159265359),
         MinPt = cms.double(DUMMYPTMIN),
-        PartID = cms.vint32(DUMMYID,DUMMYID,DUMMYID,DUMMYID,DUMMYID,DUMMYID,DUMMYID,DUMMYID,DUMMYID,DUMMYID)
+        PartID = cms.vint32(DUMMYIDs)
     ),
     Verbosity = cms.untracked.int32(0),
     firstRun = cms.untracked.uint32(1),
