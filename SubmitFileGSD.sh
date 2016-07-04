@@ -6,6 +6,8 @@ localFlag=${4}
 CMSSWVER=${5} # CMSSW_8_1_0_pre7
 CMSSWDIR=${6} # ${curDir}/../${CMSSWVER}
 CMSSWARCH=${7} # slc6_amd64_gcc530
+eosArea=${8}
+dataTier=${9}
 
 ##Create Work Area
 export SCRAM_ARCH=${CMSSWARCH}
@@ -19,14 +21,14 @@ eval `scramv1 runtime -sh`
 edmPluginRefresh -p ../lib/$SCRAM_ARCH
 
 ## Execute job and retrieve the outputs
-#cp ${curDir}/${outDir}/cfg/${cfgFile} ./
 echo "Job running on `hostname` at `date`"
+
 cmsRun ${curDir}/${outDir}/cfg/${cfgFile}
 
-# copy to outDir in curDir or at CMG EOS
+# copy to outDir in curDir or at given EOS area
 if [ ${localFlag} == "True" ]
   then
-    cp *.root ${curDir}/${outDir}/GSD/
+    cp *${dataTier}*.root ${curDir}/${outDir}/${dataTier}/
   else
-    xrdcp -N -v *.root root://eoscms.cern.ch//eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/${outDir}/GSD/
+    xrdcp -N -v *${dataTier}*.root root://eoscms.cern.ch/${eosArea}/${outDir}/${dataTier}/
 fi
