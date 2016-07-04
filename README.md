@@ -1,4 +1,4 @@
-## reco-prodtools
+# reco-prodtools
 Home of the tools to produce samples for HGCAL reconstruction studies
 
 ## hello world
