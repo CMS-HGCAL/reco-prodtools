@@ -2,12 +2,12 @@
 # using:
 # Revision: 1.19
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v
-# with command line options: SingleGammaPt35_cfi --conditions auto:run2_mc -n 10 --era Phase2 --eventcontent FEVTDEBUGHLT --relval 9000,50 -s GEN,SIM,DIGI:pdigi_valid,L1,DIGI2RAW --datatier GEN-SIM-DIGI-RAW --beamspot Realistic50ns13TeVCollision --customise SLHCUpgradeSimulations/Configuration/combinedCustoms.cust_2023LReco --geometry Extended2023LReco -n 100 --no_exec --fileout file:step1_DIGIRAW.root
+# with command line options: SingleGammaPt35_cfi --conditions auto:run2_mc -n 10 --era Phase2LReco --eventcontent FEVTDEBUGHLT --relval 9000,50 -s GEN,SIM,DIGI:pdigi_valid,L1,DIGI2RAW --datatier GEN-SIM-DIGI-RAW --beamspot Realistic50ns13TeVCollision --customise SLHCUpgradeSimulations/Configuration/combinedCustoms.cust_2023LReco --geometry Extended2023LReco -n 100 --no_exec --fileout file:step1_DIGIRAW.root
 import FWCore.ParameterSet.Config as cms
 
 from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process('DIGI2RAW',eras.Phase2)
+process = cms.Process('DIGI2RAW',eras.Phase2LReco)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')

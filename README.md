@@ -8,7 +8,7 @@ https://github.com/CMS-HGCAL/cmssw
 
 Then anywhere,
 ```
-git clone https://github.com/CMS-HGCAL/reco-prodtools.git
+git clone git@github.com:CMS-HGCAL/reco-prodtools.git
 cd reco-prodtools
 python SubmitHGCalPGun.py --nevts 2 --evtsperjob 1 --queue 1nh --partID 13 --pTmin 34.9 --pTmax 35.1 --tag test_${USER}
 ```
@@ -65,16 +65,21 @@ For more info on available options type `python SubmitHGCalPGun.py --help`
 We use the _fork and pull_ model:
 
 [Fork this repository](https://github.com/CMS-HGCAL/reco-prodtools/fork).
+
+If you haven't done so yet, clone this repository:
 ```
-git clone https://github.com/${USER}/reco-prodtools.git
-git remote add upstream https://github.com/CMS-HGCAL/reco-prodtools.git
-git checkout -b ${USER}_feature_branch upstream/master
+git clone git@github.com:CMS-HGCAL/reco-prodtools.git
+```
+Add your fork of the repository as remote:
+```
+git remote add mine git@github.com:`git config user.github`/reco-prodtools.git
+git checkout -b ${USER}_feature_branch origin/master
 ```
 Work on your feature, `add`, `commit`, etc.
 ```
-git fetch upstream
-git rebase upstream/master
-git push origin ${USER}_feature_branch
+git fetch origin
+git rebase origin/master
+git push mine ${USER}_feature_branch
 ```
 
  Make a pull request on github.

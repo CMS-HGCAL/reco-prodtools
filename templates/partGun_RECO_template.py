@@ -1,13 +1,13 @@
 # Auto generated configuration file
-# using: 
-# Revision: 1.19 
-# Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: step3 --conditions auto:run2_mc -n 10 --era Phase2 --eventcontent FEVTDEBUGHLT -s RAW2DIGI,L1Reco,RECO:localreco --datatier GEN-SIM-RECO --customise SLHCUpgradeSimulations/Configuration/combinedCustoms.cust_2023LReco --geometry Extended2023LReco -n 100 --no_exec --filein file:step2.root --fileout file:step3.root
+# using:
+# Revision: 1.19
+# Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v
+# with command line options: step3 --conditions auto:run2_mc -n 10 --era Phase2LReco --eventcontent FEVTDEBUGHLT -s RAW2DIGI,L1Reco,RECO:localreco --datatier GEN-SIM-RECO --customise SLHCUpgradeSimulations/Configuration/combinedCustoms.cust_2023LReco --geometry Extended2023LReco -n 100 --no_exec --filein file:step2.root --fileout file:step3.root
 import FWCore.ParameterSet.Config as cms
 
 from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process('RECO',eras.Phase2)
+process = cms.Process('RECO',eras.Phase2LReco)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -113,7 +113,7 @@ process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,proces
 # customisation of the process.
 
 # Automatic addition of the customisation function from SLHCUpgradeSimulations.Configuration.combinedCustoms
-from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023LReco 
+from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023LReco
 
 #call to customisation function cust_2023LReco imported from SLHCUpgradeSimulations.Configuration.combinedCustoms
 process = cust_2023LReco(process)
