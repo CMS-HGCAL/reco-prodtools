@@ -3,7 +3,7 @@ Home of the tools to produce samples for HGCAL reconstruction studies
 
 ## hello world
 
-Setup a `CMSSW_8_1_0_pre7` (`slc6_amd64_gcc530`) according to
+Setup a `CMSSW_8_1_0_pre8` (`slc6_amd64_gcc530`) according to
 https://github.com/CMS-HGCAL/cmssw
 
 Then anywhere,
@@ -39,14 +39,16 @@ Rule of thumb for GEN-SIM-DIGI: 4 events per `1nh`:
  * 20 events should be possible to finish in queue `8nh`.
  * Ditto, 100 events in `1nd`.
 
+## RECO step
+
 To run RECO stage on the produced GEN-SIM-DIGI samples, stored under `partGun_[MYTAG]_[DATE]` (locally or on the CMG EOS area), one should run:
 ```
-python SubmitHGCalPGun.py
-  --datTier RECO
-  --evtsperjob NPERJOB
-  --queue QUEUENAME
-  --inDir partGun_[MYTAG]_[DATE]
-  [--local]
+python SubmitHGCalPGun.py \
+  --datTier RECO \
+  --evtsperjob NPERJOB \
+  --queue QUEUENAME \
+  --inDir partGun_[MYTAG]_[DATE] \
+  [--local] \
   --tag MYTAG
 ```
 
@@ -59,6 +61,22 @@ Rule of thumb for RECO: 10 events per `1nh`:
 
 
 For more info on available options type `python SubmitHGCalPGun.py --help`
+
+## NTUP step
+
+This needs the ntupliser to be installed as in https://github.com/CMS-HGCAL/reco-ntuples
+
+To run NTUP stage on the produced RECO samples, stored under `partGun_[MYTAG]_[DATE]` (locally or on the CMG EOS area), one should run:
+```
+python SubmitHGCalPGun.py \
+  --datTier NTUP \
+  --evtsperjob NPERJOB \
+  --queue QUEUENAME \
+  --inDir partGun_[MYTAG]_[DATE] \
+  [--local] \
+  --tag MYTAG
+```
+
 
 # to contribute
 
