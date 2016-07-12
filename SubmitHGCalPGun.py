@@ -35,9 +35,14 @@ def parseOptions():
     (opt, args) = parser.parse_args()
 
     # sanity check for data tiers
-    dataTiers = ['GSD', 'RECO']
+    dataTiers = ['GSD', 'RECO', 'NTUP']
     if not opt.DTIER in dataTiers:
         parser.error('Data tier ' + opt.DTIER + ' is not supported. Exiting...')
+        sys.exit()
+
+    # make sure CMSSW is set up
+    if not 'CMSSW_BASE' in os.environ:
+        print 'ERROR: CMSSW does not seem to be set up. Exiting...'
         sys.exit()
 
     # set the default config, if not specified in options
@@ -45,7 +50,7 @@ def parseOptions():
         opt.CONFIGFILE = 'templates/partGun_'+opt.DTIER+'_template.py'
 
     # supported queues with the recommended number of events per hour (e.g. ~4events/1nh for GSD, ~8events/1nh for RECO) + sanity check
-    eventsPerHour = {'GSD':4, 'RECO':8}
+    eventsPerHour = {'GSD':4, 'RECO':8, 'NTUP':100}
     queues_evtsperjob = {'1nw':(7*24*eventsPerHour[opt.DTIER]), '2nd':(2*24*eventsPerHour[opt.DTIER]), '1nd':(1*24*eventsPerHour[opt.DTIER]), '8nh':(8*eventsPerHour[opt.DTIER]), '1nh':(1*eventsPerHour[opt.DTIER]), '8nm':(1)}
     if not opt.QUEUE in queues_evtsperjob.keys():
         parser.error('Queue ' + opt.QUEUE + ' is not supported. Exiting...')
@@ -91,13 +96,13 @@ def printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     print '--------------------'
 
 ### prepare the list of input GSD files for RECO stage
-def getInputFileList(inPath, local, pattern):
+def getInputFileList(inPath, inSubDir, local, pattern):
     inputList = []
     if (local):
-        inputList = [f for f in os.listdir(inPath+'/GSD') if (os.path.isfile(os.path.join(inPath+'/GSD', f)) and (fnmatch.fnmatch(f, pattern)))]
+        inputList = [f for f in os.listdir(inPath+'/'+inSubDir) if (os.path.isfile(os.path.join(inPath+'/'+inSubDir, f)) and (fnmatch.fnmatch(f, pattern)))]
     else:
         # this is a work-around, need to find a proper way to do it for EOS
-        inputList = [f for f in processCmd(eosExec + ' ls ' + inPath+'/GSD/').split('\n') if ( (processCmd(eosExec + ' fileinfo ' + inPath+'/GSD/' + f).split(':')[0].lstrip() == 'File') and (fnmatch.fnmatch(f, pattern)))]
+        inputList = [f for f in processCmd(eosExec + ' ls ' + inPath+'/'+inSubDir+'/').split('\n') if ( (processCmd(eosExec + ' fileinfo ' + inPath+'/'+inSubDir+'/' + f).split(':')[0].lstrip() == 'File') and (fnmatch.fnmatch(f, pattern)))]
     return inputList
 
 ### submission of GSD/RECO production
@@ -114,6 +119,13 @@ def submitHGCalProduction():
     SCRAM_ARCH = os.getenv('SCRAM_ARCH')
     commonFileNamePrefix = 'partGun'
 
+    # previous data tier
+    previousDataTier = ''
+    if (opt.DTIER == 'RECO'):
+        previousDataTier = 'GSD'
+    elif (opt.DTIER == 'NTUP'):
+        previousDataTier = 'RECO'
+
     # prepare tag, prepare/check out dirs
     tag = opt.TAG+'_'+time.strftime("%Y%m%d")
     if (opt.DTIER == 'GSD'):
@@ -124,7 +136,7 @@ def submitHGCalProduction():
         else:
             print 'Directory '+outDir+' already exists. Exiting...'
             sys.exit()
-    elif (opt.DTIER == 'RECO'):
+    elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
         outDir=opt.inDir
         processCmd('mkdir -p '+outDir+'/cfg/')
         processCmd('mkdir -p '+outDir+'/std/')
@@ -134,11 +146,11 @@ def submitHGCalProduction():
         recoInputPrefix = 'file:'+currentDir+'/'+outDir+'/GSD/'
     else:
         processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/'+opt.DTIER+'/');
-        recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+outDir+'/GSD/'
-    # determine number of jobs for GSD, in case of 'RECO' only get the input GSD path
+        recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+outDir+'/'+previousDataTier+'/'
+    # determine number of jobs for GSD, in case of 'RECO'/'NTUP' only get the input GSD/RECO path
     if (opt.DTIER == 'GSD'):
         njobs = int(math.ceil(float(opt.NEVTS)/float(opt.EVTSPERJOB)))
-    elif (opt.DTIER == 'RECO'):
+    elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
         inPath = [opt.eosArea+'/'+opt.inDir, currentDir+'/'+opt.inDir][opt.LOCAL]
 
     # print out some info
@@ -148,9 +160,9 @@ def submitHGCalProduction():
     print '[Submitting jobs]'
     jobCount=0
     for particle in particles:
-        # in case of 'RECO', get the input file list for given particle, determine number of jobs, get also basic GSD info
-        if (opt.DTIER == 'RECO'):
-            inputFilesList = getInputFileList(inPath, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+particle+'_*.root')
+        # in case of 'RECO' or 'NTUP', get the input file list for given particle, determine number of jobs, get also basic GSD/RECO info
+        if (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
+            inputFilesList = getInputFileList(inPath, previousDataTier, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+particle+'_*.root')
             if len(inputFilesList)==0: continue
             opt.pTmin = float(inputFilesList[0].split('_Pt')[1].split('To')[0])
             opt.pTmax = float(inputFilesList[0].split('To')[1].split('_')[0])
@@ -173,7 +185,7 @@ def submitHGCalProduction():
                 processCmd("sed -i 's~DUMMYIDs~"+nParticles+"~g' "+outDir+'/cfg/'+cfgfile)
                 processCmd("sed -i 's~DUMMYPTMIN~"+str(opt.pTmin)+"~g' "+outDir+'/cfg/'+cfgfile)
                 processCmd("sed -i 's~DUMMYPTMAX~"+str(opt.pTmax)+"~g' "+outDir+'/cfg/'+cfgfile)
-            elif (opt.DTIER == 'RECO'):
+            elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
                 # prepare RECO inputs
                 inputFilesListPerJob = inputFilesList[(job-1)*nFilesPerJob:(job)*nFilesPerJob]
                 if len(inputFilesListPerJob)==0: continue
