@@ -97,7 +97,7 @@ Work on your feature, `add`, `commit`, etc.
 ```
 git fetch origin
 git rebase origin/master
-git push mine ${USER}_feature_branch
+git push mine feature_branch
 ```
 
  Make a pull request on github.
