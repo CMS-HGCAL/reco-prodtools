@@ -20,7 +20,7 @@ def parseOptions():
     parser.add_option('-n', '--nevts',  dest='NEVTS',  type=int,       default=100,  help='total number of events, applicable to runs with GEN stage, default is 100')
     parser.add_option('-e', '--evtsperjob',dest='EVTSPERJOB', type=int,default=-1,   help='number of events per job, if set to -1 it will set to a recommended value (GSD: 4events/1nh, RECO:8events/1nh), default is -1')
     parser.add_option('-c', '--cfg',    dest='CONFIGFILE', type='string', default='',help='CMSSW config template name, if empty string the deafult one will be used')
-    parser.add_option('-p', '--partID', dest='PARTID', type='string',     default='', help='particle PDG ID, if empty string - run on all supported (11,13,22,111,211), default is empty string (all)')
+    parser.add_option('-p', '--partID', dest='PARTID', type='string',     default='', help='particle PDG ID, if empty string - run on all supported (11,12,13,14,15,16,22,111,211), default is empty string (all)')
     parser.add_option(  '', '--nPart',  dest='NPART',  type=int,   default=10,      help='number of particles of type PARTID to be generated per event, default is 10')
     parser.add_option(  '', '--pTmin',  dest='pTmin',  type=float, default=1.0,     help='min. pT value')
     parser.add_option(  '', '--pTmax',  dest='pTmax',  type=float, default=35.0,    help='max. pT value')
@@ -61,7 +61,7 @@ def parseOptions():
 
     # list of supported particles, check if requested partID is supported
     global particles
-    particles = ['22', '111', '211', '11', '13']
+    particles = ['22', '111', '211', '11', '13', '15', '12', '14', '16']
     if not (opt.PARTID in particles or opt.PARTID==''):
         parser.error('Particle with ID ' + opt.PARTID + ' is not supported. Exiting...')
         sys.exit()
