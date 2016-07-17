@@ -160,6 +160,8 @@ def submitHGCalProduction():
     print '[Submitting jobs]'
     jobCount=0
     for particle in particles:
+        nFilesPerJob = 0
+        eventsPerPrevJob = 0
         # in case of 'RECO' or 'NTUP', get the input file list for given particle, determine number of jobs, get also basic GSD/RECO info
         if (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
             inputFilesList = getInputFileList(inPath, previousDataTier, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+particle+'_*.root')
