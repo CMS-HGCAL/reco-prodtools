@@ -41,7 +41,7 @@ process.options = cms.untracked.PSet(
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
-    annotation = cms.untracked.string('MiultipleParticleGun_cfi'),
+    annotation = cms.untracked.string('MultipleParticleGun_cfi'),
     name = cms.untracked.string('Applications'),
     version = cms.untracked.string('$Revision: 1.19 $')
 )
@@ -82,7 +82,7 @@ process.generator = cms.EDProducer("FlatRandomPtGunProducer",
         PartID = cms.vint32(DUMMYIDs)
     ),
     Verbosity = cms.untracked.int32(0),
-    firstRun = cms.untracked.uint32(1),
+    firstRun = cms.untracked.uint32(DUMMYRUN),
     psethack = cms.string('multiple particles predefined pT eta 1p479 to 3')
 )
 

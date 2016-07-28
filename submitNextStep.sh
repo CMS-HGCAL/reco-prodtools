@@ -8,7 +8,7 @@
 
 eosExec='/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select'
 SAMPLEDIR='/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production'
-EVTSRECO=10
+EVTSRECO=50
 EVTSNTUP=100
 
 for i in `$eosExec ls $SAMPLEDIR`; do
