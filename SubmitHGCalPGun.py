@@ -180,6 +180,7 @@ def submitHGCalProduction():
             outfile = basename +'.root'
             processCmd('cp '+opt.CONFIGFILE+' '+outDir+'/cfg/'+cfgfile)
             processCmd("sed -i 's~DUMMYFILENAME~"+outfile+"~g' "+outDir+'/cfg/'+cfgfile)
+            processCmd("sed -i 's~DUMMYRUN~"+str(job)+"~g' "+outDir+'/cfg/'+cfgfile)
             if (opt.DTIER == 'GSD'):
                 # prepare GEN-SIM-DIGI inputs
                 nParticles = ','.join([particle for i in range(0,opt.NPART)])
