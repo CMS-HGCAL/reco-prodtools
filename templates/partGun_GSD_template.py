@@ -32,6 +32,46 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(DUMMYEVTSPERJOB)
 )
 
+process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService",
+                                                   generator = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('HepJamesRandom')
+                ),
+                                                   mix = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                ),
+                                                   VtxSmeared = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                ),
+                                                   g4SimHits = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                ),
+                                                   simMuonGEMDigis = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                ),
+                                                   simMuonME0Digis = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                ),
+                                                   simMuonCSCDigis = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                ),
+                                                   simMuonDTDigis = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                ),
+                                                   simMuonRPCDigis = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                )
+                                                   )
+
+
 # Input source
 process.source = cms.Source("EmptySource")
 
@@ -70,6 +110,8 @@ process.mix.digitizers = cms.PSet(process.theDigitizersValid)
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
+process.RandomNumberGeneratorService.generator.initialSeed = DUMMYSEED
+
 process.generator = cms.EDProducer("FlatRandomPtGunProducer",
     AddAntiParticle = cms.bool(True),
     PGunParameters = cms.PSet(
@@ -82,7 +124,7 @@ process.generator = cms.EDProducer("FlatRandomPtGunProducer",
         PartID = cms.vint32(DUMMYIDs)
     ),
     Verbosity = cms.untracked.int32(0),
-    firstRun = cms.untracked.uint32(DUMMYRUN),
+    firstRun = cms.untracked.uint32(1),
     psethack = cms.string('multiple particles predefined pT eta 1p479 to 3')
 )
 
