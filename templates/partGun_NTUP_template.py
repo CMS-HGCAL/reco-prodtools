@@ -20,7 +20,8 @@ process.source = cms.Source("PoolSource",
 
 process.ana = cms.EDAnalyzer('HGCalAnalysis',
                              detector = cms.string("both"),
-                             depthClusteringCone = cms.double(0.015)
+                             depthClusteringCone = cms.double(0.015),
+                             rawRecHits = cms.bool(True)
 )
 
 process.TFileService = cms.Service("TFileService",
