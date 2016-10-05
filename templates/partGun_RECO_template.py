@@ -59,6 +59,7 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
 )
 
 # Additional output definition
+process.FEVTDEBUGHLToutput.outputCommands.append('keep *_imagingClusterHGCal_*_*')
 
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
