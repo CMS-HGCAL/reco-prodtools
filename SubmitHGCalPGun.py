@@ -143,7 +143,7 @@ def submitHGCalProduction():
     # prepare dir for GSD outputs locally or at EOS
     if (opt.LOCAL):
         processCmd('mkdir -p '+outDir+'/'+opt.DTIER+'/')
-        recoInputPrefix = 'file:'+currentDir+'/'+outDir+'/GSD/'
+        recoInputPrefix = 'file:'+currentDir+'/'+outDir+'/'+previousDataTier+'/'
     else:
         processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/'+opt.DTIER+'/');
         recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+outDir+'/'+previousDataTier+'/'
