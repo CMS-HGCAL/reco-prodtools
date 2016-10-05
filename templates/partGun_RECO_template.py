@@ -7,7 +7,7 @@ import FWCore.ParameterSet.Config as cms
 
 from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process('RECO',eras.Phase2LReco)
+process = cms.Process('RECO',eras.Phase2C2)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -15,7 +15,7 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
-process.load('Configuration.Geometry.GeometryExtended2023simReco_cff')
+process.load('Configuration.Geometry.GeometryExtended2023D3Reco_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.RawToDigi_cff')
 process.load('Configuration.StandardSequences.L1Reco_cff')
@@ -59,52 +59,18 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
 )
 
 # Additional output definition
-process.FEVTDEBUGHLToutput.outputCommands.append('keep *_imagingClusterHGCal_*_*')
-process.FEVTDEBUGHLToutput.outputCommands.append('keep *_FakeCluster*_*_*')
-
 
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
 process.load('RecoLocalCalo.HGCalRecHitDump.imagingClusterHGCal_cfi')
-
-process.load('CommonTools.UtilAlgos.TFileService_cfi')
-process.TFileService.fileName = cms.string('hydra_DUMMYFILENAME')
-
 process.load('RecoParticleFlow.PFClusterProducer.particleFlowRecHitHGC_cff')
-
-process.Hydra = cms.EDProducer(
-    'HydraProducer',
-    HGCRecHitCollection=cms.VInputTag("particleFlowRecHitHGC"),
-    HGCalUncalibRecHitCollection = cms.VInputTag('HGCalUncalibRecHit:HGCEEUncalibRecHits',
-                                                 'HGCalUncalibRecHit:HGCHEFUncalibRecHits'
-                                                 ),
-    GenParticleCollection=cms.InputTag("genParticles"),
-    RecTrackCollection=cms.InputTag("generalTracks"),
-    SimTrackCollection=cms.InputTag("g4SimHits"),
-    SimVertexCollection=cms.InputTag("g4SimHits"),
-    SimHitCollection = cms.VInputTag('g4SimHits:HGCHitsEE',
-                                     'g4SimHits:HGCHitsHEfront')
-    )
-process.FakeClusterGen = cms.EDProducer(
-    "HydraFakeClusterBuilder",HydraTag=cms.InputTag("Hydra"),
-    SplitRecHits=cms.bool(False),
-    UseGenParticles=cms.bool(True),
-    MinDebugEnergy=cms.untracked.double(30.)
-    )
-process.FakeClusterCaloFace = cms.EDProducer(
-    "HydraFakeClusterBuilder",HydraTag=cms.InputTag("Hydra"),
-    SplitRecHits=cms.bool(False),
-    UseGenParticles=cms.bool(False),
-    MinDebugEnergy=cms.untracked.double(30.)
-    )
-
 
 # Path and EndPath definitions
 process.raw2digi_step = cms.Path(process.RawToDigi)
 process.L1Reco_step = cms.Path(process.L1Reco)
-process.reconstruction_step = cms.Path(process.localreco)
+process.reconstruction_step = cms.Path(process.reconstruction)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.FEVTDEBUGHLToutput_step = cms.EndPath(process.FEVTDEBUGHLToutput)
 
@@ -114,17 +80,20 @@ process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,proces
 # customisation of the process.
 
 # Automatic addition of the customisation function from SLHCUpgradeSimulations.Configuration.combinedCustoms
-from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023LReco
+from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023tilted
 
-#call to customisation function cust_2023LReco imported from SLHCUpgradeSimulations.Configuration.combinedCustoms
-process = cust_2023LReco(process)
+#call to customisation function cust_2023tilted imported from SLHCUpgradeSimulations.Configuration.combinedCustoms
+process = cust_2023tilted(process)
 
-# End of customisation functions
-process.localreco += process.particleFlowRecHitHGCSeq
-process.localreco += process.Hydra
-process.localreco += process.FakeClusterGen
-process.localreco += process.FakeClusterCaloFace
+process.reconstruction += process.particleFlowRecHitHGCSeq
 process.imagingClusterHGCal.detector = cms.string("both")
 process.imagingClusterHGCal.showerSigma = cms.double(2.8)
 process.imagingClusterHGCal.doSharing = cms.bool(True)
-process.localreco += process.imagingClusterHGCal
+process.reconstruction += process.imagingClusterHGCal
+
+# End of customisation functions
+#do not add changes to your config after this point (unless you know what you are doing)
+from FWCore.ParameterSet.Utilities import convertToUnscheduled
+process=convertToUnscheduled(process)
+from FWCore.ParameterSet.Utilities import cleanUnscheduled
+process=cleanUnscheduled(process)
