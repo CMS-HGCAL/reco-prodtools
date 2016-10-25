@@ -97,7 +97,7 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
         dataTier = cms.untracked.string('GEN-SIM-DIGI-RAW'),
         filterName = cms.untracked.string('')
     ),
-    eventAutoFlushCompressedSize = cms.untracked.int32(10485760),
+    eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
     fileName = cms.untracked.string('file:DUMMYFILENAME'),
     outputCommands = process.FEVTDEBUGHLTEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
@@ -109,7 +109,7 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
 process.genstepfilter.triggerConditions=cms.vstring("generation_step")
 process.mix.digitizers = cms.PSet(process.theDigitizersValid)
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 
 process.RandomNumberGeneratorService.generator.initialSeed = DUMMYSEED
 
@@ -148,7 +148,12 @@ process.schedule.extend([process.endjob_step,process.FEVTDEBUGHLToutput_step])
 for path in process.paths:
 	getattr(process,path)._seq = process.generator * getattr(process,path)._seq
 
+#Setup FWK for multithreaded
+process.options.numberOfThreads=cms.untracked.uint32(4)
+process.options.numberOfStreams=cms.untracked.uint32(0)
+
 # customisation of the process.
+#process.genParticles.src = cms.InputTag("generator:unsmeared")
 
 # Automatic addition of the customisation function from SLHCUpgradeSimulations.Configuration.combinedCustoms
 from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023tilted
