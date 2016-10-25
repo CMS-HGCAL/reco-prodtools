@@ -19,7 +19,7 @@ process.source = cms.Source("PoolSource",
 )
 
 process.ana = cms.EDAnalyzer('HGCalAnalysis',
-                             detector = cms.string("both"),
+                             detector = cms.string("all"),
                              depthClusteringCone = cms.double(0.015),
                              rawRecHits = cms.bool(True)
 )
