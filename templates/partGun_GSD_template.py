@@ -19,7 +19,7 @@ process.load('Configuration.Geometry.GeometryExtended2023D3Reco_cff')
 process.load('Configuration.Geometry.GeometryExtended2023D3_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
-process.load('IOMC.EventVertexGenerators.VtxSmearedRealistic50ns13TeVCollision_cfi')
+process.load('Configuration.StandardSequences.VtxSmearedNoSmear_cff')
 process.load('GeneratorInterface.Core.genFilterSummary_cff')
 process.load('Configuration.StandardSequences.SimIdeal_cff')
 process.load('Configuration.StandardSequences.Digi_cff')
@@ -113,20 +113,20 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 
 process.RandomNumberGeneratorService.generator.initialSeed = DUMMYSEED
 
-process.generator = cms.EDProducer("FlatRandomPtGunProducer",
+process.generator = cms.EDProducer("GUNPRODUCERTYPE",
     AddAntiParticle = cms.bool(True),
     PGunParameters = cms.PSet(
         MaxEta = cms.double(3.0),
         MaxPhi = cms.double(3.14159265359),
-        MaxPt = cms.double(DUMMYPTMAX),
+        MAXTHRESHSTRING = cms.double(DUMMYTHRESHMAX),
         MinEta = cms.double(1.479),
         MinPhi = cms.double(-3.14159265359),
-        MinPt = cms.double(DUMMYPTMIN),
+        MINTHRESHSTRING = cms.double(DUMMYTHRESHMIN),
         PartID = cms.vint32(DUMMYIDs)
     ),
     Verbosity = cms.untracked.int32(0),
     firstRun = cms.untracked.uint32(1),
-    psethack = cms.string('multiple particles predefined pT eta 1p479 to 3')
+    psethack = cms.string('multiple particles predefined pT/E eta 1p479 to 3')
 )
 
 
