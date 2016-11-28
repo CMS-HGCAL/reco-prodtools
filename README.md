@@ -3,14 +3,14 @@ Home of the tools to produce samples for HGCAL reconstruction studies
 
 ## hello world
 
-Setup a `CMSSW_8_1_0_pre8` (`slc6_amd64_gcc530`) according to
+Setup a `CMSSW_8_1_0_pre15` (`slc6_amd64_gcc530`) according to
 https://github.com/CMS-HGCAL/cmssw
 
 Then anywhere,
 ```
 git clone git@github.com:CMS-HGCAL/reco-prodtools.git
 cd reco-prodtools
-python SubmitHGCalPGun.py --nevts 2 --evtsperjob 1 --queue 1nh --partID 13 --pTmin 34.9 --pTmax 35.1 --tag test_${USER}
+python SubmitHGCalPGun.py --nevts 2 --evtsperjob 1 --queue 1nh --partID 13 --thresholdMin 35 --thresholdMin 35 --gunType E --tag test_${USER}
 ```
 
 ## details
@@ -24,8 +24,9 @@ To produce `NEVENTS` GEN-SIM-DIGI events with `NPART` particles (per event) of t
   --queue QUEUENAME
   --partID PART_PDGID
   --nPart NPART
-  --pTmin PTMIN
-  --pTmax PTMAX
+  --thresholdMin PTMIN
+  --thresholdMin PTMAX
+  --gunType GUNTYPE
   [--local]
   --tag MYTAG
 ```

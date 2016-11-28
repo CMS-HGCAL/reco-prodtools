@@ -4,6 +4,7 @@ import optparse, shlex, fnmatch, pprint
 import time
 from time import gmtime, strftime
 import math
+import re
 
 eosExec = '/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select'
 
@@ -94,7 +95,7 @@ def printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     print 'CMSSW BASE: ', CMSSW_BASE
     print 'CMSSW VER:  ', CMSSW_VERSION,'[', SCRAM_ARCH, ']'
     print 'CONFIGFILE: ', opt.CONFIGFILE
-    print 'INPUTS:     ', [opt.inDir, 'Particle gun type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' per event, threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+']'][int(opt.DTIER=='GSD')]
+    print 'INPUTS:     ', [opt.inDir, 'Particle gun type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+']'][int(opt.DTIER=='GSD')]
     print 'STORE AREA: ', [opt.eosArea, currentDir][int(opt.LOCAL)]
     print 'OUTPUT DIR: ', outDir
     print 'QUEUE:      ', opt.QUEUE
@@ -172,10 +173,15 @@ def submitHGCalProduction():
         # in case of 'RECO' or 'NTUP', get the input file list for given particle, determine number of jobs, get also basic GSD/RECO info
         if (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
             inputFilesList = getInputFileList(inPath, previousDataTier, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+particle+'_*.root')
-            if len(inputFilesList)==0: continue
-            opt.thresholdMin = float(inputFilesList[0].split('_%s' % opt.gunType)[1].split('To')[0])
-            opt.thresholdMax = float(inputFilesList[0].split('To')[1].split('_')[0])
-            eventsPerPrevJob = int(inputFilesList[0].split('_x')[1].split('_%s' % opt.gunType)[0])
+            if len(inputFilesList) == 0:
+                continue
+            # build regular expression for splitting
+            regex = re.compile(ur"partGun_PDGid[0-9]*_x([0-9]*)_(E|Pt)([0-9]*[.]?[0-9]*)To([0-9]*[.]?[0-9]*)_.*\.root")
+            matches = regex.match(inputFilesList[0])
+            eventsPerPrevJob = int(matches.group(1))
+            opt.gunType = matches.group(2)
+            opt.thresholdMin = float(matches.group(3))
+            opt.thresholdMax = float(matches.group(4))
             nFilesPerJob = max(int(math.floor(float(min(opt.EVTSPERJOB, len(inputFilesList)*eventsPerPrevJob))/float(eventsPerPrevJob))),1)
             njobs = int(math.ceil(float(len(inputFilesList))/float(nFilesPerJob)))
 
