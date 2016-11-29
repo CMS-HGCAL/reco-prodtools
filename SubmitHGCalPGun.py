@@ -4,6 +4,7 @@ import optparse, shlex, fnmatch, pprint
 import time
 from time import gmtime, strftime
 import math
+import re
 
 eosExec = '/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select'
 
@@ -22,8 +23,9 @@ def parseOptions():
     parser.add_option('-c', '--cfg',    dest='CONFIGFILE', type='string', default='',help='CMSSW config template name, if empty string the deafult one will be used')
     parser.add_option('-p', '--partID', dest='PARTID', type='string',     default='', help='particle PDG ID, if empty string - run on all supported (11,12,13,14,15,16,22,111,211), default is empty string (all)')
     parser.add_option(  '', '--nPart',  dest='NPART',  type=int,   default=10,      help='number of particles of type PARTID to be generated per event, default is 10')
-    parser.add_option(  '', '--pTmin',  dest='pTmin',  type=float, default=1.0,     help='min. pT value')
-    parser.add_option(  '', '--pTmax',  dest='pTmax',  type=float, default=35.0,    help='max. pT value')
+    parser.add_option(  '', '--thresholdMin',  dest='thresholdMin',  type=float, default=1.0,     help='min. threshold value')
+    parser.add_option(  '', '--thresholdMax',  dest='thresholdMax',  type=float, default=35.0,    help='max. threshold value')
+    parser.add_option(  '', '--gunType',   dest='gunType',   type='string', default='Pt',    help='Pt or E gun')
     parser.add_option('-l', '--local',  action='store_true', dest='LOCAL',  default=False, help='store output dir locally instead of at EOS CMG area, default is False.')
     parser.add_option('-y', '--dry-run',action='store_true', dest='DRYRUN', default=False, help='perform a dry run (no jobs are lauched).')
     parser.add_option(  '', '--eosArea',dest='eosArea',type='string', default='/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production',help='path to the eos area where the output jobs will be staged out')
@@ -43,6 +45,11 @@ def parseOptions():
     # make sure CMSSW is set up
     if not 'CMSSW_BASE' in os.environ:
         print 'ERROR: CMSSW does not seem to be set up. Exiting...'
+        sys.exit()
+
+    partGunTypes = ['Pt', 'E']
+    if opt.gunType not in partGunTypes:
+        parser.error('Particle gun type ' + opt.gunType + ' is not supported. Exiting...')
         sys.exit()
 
     # set the default config, if not specified in options
@@ -88,7 +95,7 @@ def printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     print 'CMSSW BASE: ', CMSSW_BASE
     print 'CMSSW VER:  ', CMSSW_VERSION,'[', SCRAM_ARCH, ']'
     print 'CONFIGFILE: ', opt.CONFIGFILE
-    print 'INPUTS:     ', [opt.inDir, 'PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' per event, pT in ['+str(opt.pTmin)+','+str(opt.pTmax)+']'][int(opt.DTIER=='GSD')]
+    print 'INPUTS:     ', [opt.inDir, 'Particle gun type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+']'][int(opt.DTIER=='GSD')]
     print 'STORE AREA: ', [opt.eosArea, currentDir][int(opt.LOCAL)]
     print 'OUTPUT DIR: ', outDir
     print 'QUEUE:      ', opt.QUEUE
@@ -118,6 +125,7 @@ def submitHGCalProduction():
     CMSSW_VERSION = os.getenv('CMSSW_VERSION')
     SCRAM_ARCH = os.getenv('SCRAM_ARCH')
     commonFileNamePrefix = 'partGun'
+    partGunType = 'FlatRandom%sGunProducer' % opt.gunType
 
     # previous data tier
     previousDataTier = ''
@@ -165,17 +173,22 @@ def submitHGCalProduction():
         # in case of 'RECO' or 'NTUP', get the input file list for given particle, determine number of jobs, get also basic GSD/RECO info
         if (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
             inputFilesList = getInputFileList(inPath, previousDataTier, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+particle+'_*.root')
-            if len(inputFilesList)==0: continue
-            opt.pTmin = float(inputFilesList[0].split('_Pt')[1].split('To')[0])
-            opt.pTmax = float(inputFilesList[0].split('To')[1].split('_')[0])
-            eventsPerPrevJob = int(inputFilesList[0].split('_x')[1].split('_Pt')[0])
+            if len(inputFilesList) == 0:
+                continue
+            # build regular expression for splitting
+            regex = re.compile(ur"partGun_PDGid[0-9]*_x([0-9]*)_(E|Pt)([0-9]*[.]?[0-9]*)To([0-9]*[.]?[0-9]*)_.*\.root")
+            matches = regex.match(inputFilesList[0])
+            eventsPerPrevJob = int(matches.group(1))
+            opt.gunType = matches.group(2)
+            opt.thresholdMin = float(matches.group(3))
+            opt.thresholdMax = float(matches.group(4))
             nFilesPerJob = max(int(math.floor(float(min(opt.EVTSPERJOB, len(inputFilesList)*eventsPerPrevJob))/float(eventsPerPrevJob))),1)
             njobs = int(math.ceil(float(len(inputFilesList))/float(nFilesPerJob)))
 
         for job in range(1,int(njobs)+1):
             print 'Submitting job '+str(job)+' out of '+str(njobs)+' for particle ID '+particle
             # prepare the out file and cfg file by replacing DUMMY entries according to input options
-            basename = commonFileNamePrefix + '_PDGid'+particle+'_x'+str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD'])+'_Pt'+str(opt.pTmin)+'To'+str(opt.pTmax)+'_'+opt.DTIER+'_'+str(job)
+            basename = commonFileNamePrefix + '_PDGid'+particle+'_x'+str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD'])+'_' + opt.gunType+str(opt.thresholdMin)+'To'+str(opt.thresholdMax)+'_'+opt.DTIER+'_'+str(job)
             cfgfile = basename +'.py'
             outfile = basename +'.root'
             processCmd('cp '+opt.CONFIGFILE+' '+outDir+'/cfg/'+cfgfile)
@@ -186,8 +199,11 @@ def submitHGCalProduction():
                 nParticles = ','.join([particle for i in range(0,opt.NPART)])
                 processCmd("sed -i 's~DUMMYEVTSPERJOB~"+str(opt.EVTSPERJOB)+"~g' "+outDir+'/cfg/'+cfgfile)
                 processCmd("sed -i 's~DUMMYIDs~"+nParticles+"~g' "+outDir+'/cfg/'+cfgfile)
-                processCmd("sed -i 's~DUMMYPTMIN~"+str(opt.pTmin)+"~g' "+outDir+'/cfg/'+cfgfile)
-                processCmd("sed -i 's~DUMMYPTMAX~"+str(opt.pTmax)+"~g' "+outDir+'/cfg/'+cfgfile)
+                processCmd("sed -i 's~DUMMYTHRESHMIN~"+str(opt.thresholdMin)+"~g' "+outDir+'/cfg/'+cfgfile)
+                processCmd("sed -i 's~DUMMYTHRESHMAX~"+str(opt.thresholdMax)+"~g' "+outDir+'/cfg/'+cfgfile)
+                processCmd("sed -i 's~GUNPRODUCERTYPE~"+str(partGunType)+"~g' "+outDir+'/cfg/'+cfgfile)
+                processCmd("sed -i 's~MAXTHRESHSTRING~Max"+str(opt.gunType)+"~g' "+outDir+'/cfg/'+cfgfile)
+                processCmd("sed -i 's~MINTHRESHSTRING~Min"+str(opt.gunType)+"~g' "+outDir+'/cfg/'+cfgfile)
             elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
                 # prepare RECO inputs
                 inputFilesListPerJob = inputFilesList[(job-1)*nFilesPerJob:(job)*nFilesPerJob]
