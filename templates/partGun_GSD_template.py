@@ -33,44 +33,7 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(DUMMYEVTSPERJOB)
 )
 
-process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService",
-                                                   generator = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('HepJamesRandom')
-                ),
-                                                   mix = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                ),
-                                                   VtxSmeared = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                ),
-                                                   g4SimHits = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                ),
-                                                   simMuonGEMDigis = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                ),
-                                                   simMuonME0Digis = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                ),
-                                                   simMuonCSCDigis = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                ),
-                                                   simMuonDTDigis = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                ),
-                                                   simMuonRPCDigis = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                )
-                                                   )
+process.RandomNumberGeneratorService.generator.initialSeed = cms.untracked.uint32(DUMMYSEED)
 
 
 # Input source
@@ -156,10 +119,10 @@ process.options.numberOfStreams=cms.untracked.uint32(0)
 #process.genParticles.src = cms.InputTag("generator:unsmeared")
 
 # Automatic addition of the customisation function from SLHCUpgradeSimulations.Configuration.combinedCustoms
-from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023tilted
+#from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023tilted
 
 #call to customisation function cust_2023tilted imported from SLHCUpgradeSimulations.Configuration.combinedCustoms
-process = cust_2023tilted(process)
+#process = cust_2023tilted(process)
 
 # Automatic addition of the customisation function from HLTrigger.Configuration.customizeHLTforMC
 from HLTrigger.Configuration.customizeHLTforMC import customizeHLTforFullSim
