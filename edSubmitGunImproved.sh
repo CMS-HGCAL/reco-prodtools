@@ -30,14 +30,16 @@ NPART=1
 #TAG='clange_PDGid22_nPart1_Pt35Pre15HexelRemovedLocalReco'
 #TAG="escott_PDGid${PARTID}_nPart1_Pt${PT}_FullWorkingTest"
 #TAG="escott_PDGid${PARTID}_nPart1_Pt${PT}_FullWorkingTestOldPhysicsList"
-TAG="escott_PDGid${PARTID}_nPart1_Pt${PT}_LindseyPRfullTestTwo"
+#TAG="escott_PDGid${PARTID}_nPart1_Pt${PT}_LindseyPRfullTestTwo"
+#TAG="escott_PDGid${PARTID}_nPart1_Pt${PT}_LindseyPRfullTestCorrectSequence"
+TAG="escott_PDGid${PARTID}_nPart1_Pt${PT}_LindseyPRfullTestCorrectSequence"
 
 EOS="/eos/cms/store/group/dpg_hgcal/comm_hgcal/escott"
 
 #DATE="20160729"
-DATE="20161202"
+DATE="20161204"
 
-EXTRALABEL=""
+#EXTRALABEL=""
 #EXTRALABEL="_fullPre8setup"
 #EXTRALABEL="_fullPre8setupEEonly"
 #EXTRALABEL="_fullPre8setupEEonlyOldParams"
@@ -53,7 +55,7 @@ EXTRALABEL=""
 #EXTRALABEL="DepthCone03"
 #EXTRALABEL="DepthCone05"
 #EXTRALABEL="DepthCone1"
-
+EXTRALABEL="KeepClusters"
 
 if [ "$TIER" == "GSD" ]
 then

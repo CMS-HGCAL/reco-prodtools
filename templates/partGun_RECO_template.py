@@ -32,6 +32,7 @@ process.maxEvents = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(DUMMYINPUTFILELIST),
+    #duplicateCheckMode = cms.untracked.string('noDuplicateCheck'),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -153,7 +154,7 @@ process.options.numberOfThreads=cms.untracked.uint32(4)
 process.options.numberOfStreams=cms.untracked.uint32(0)
 
 # customisation of the process.
-process.FEVTDEBUGHLToutput.outputCommands.append('keep *_hgcalLayerClusters_*_*')
+#process.FEVTDEBUGHLToutput.outputCommands.append('keep *_hgcalLayerClusters_*_*')
 
 # Automatic addition of the customisation function from SimGeneral.MixingModule.fullMixCustomize_cff
 from SimGeneral.MixingModule.fullMixCustomize_cff import setCrossingFrameOn 

@@ -146,6 +146,7 @@ def submitHGCalProduction():
             sys.exit()
     elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
         outDir=opt.inDir
+        #outDir='partGun_'+tag
         processCmd('mkdir -p '+outDir+'/cfg/')
         processCmd('mkdir -p '+outDir+'/std/')
     # prepare dir for GSD outputs locally or at EOS
@@ -155,6 +156,7 @@ def submitHGCalProduction():
     else:
         processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/'+opt.DTIER+'/');
         recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+outDir+'/'+previousDataTier+'/'
+        #recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+opt.inDir+'/'+previousDataTier+'/'
     # determine number of jobs for GSD, in case of 'RECO'/'NTUP' only get the input GSD/RECO path
     if (opt.DTIER == 'GSD'):
         njobs = int(math.ceil(float(opt.NEVTS)/float(opt.EVTSPERJOB)))
