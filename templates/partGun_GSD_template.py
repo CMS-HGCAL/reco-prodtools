@@ -38,6 +38,7 @@ process.RandomNumberGeneratorService.generator.initialSeed = cms.untracked.uint3
 
 # Input source
 process.source = cms.Source("EmptySource")
+process.source.firstLuminosityBlock = cms.untracked.uint32(DUMMYSEED)
 
 process.options = cms.untracked.PSet(
 
