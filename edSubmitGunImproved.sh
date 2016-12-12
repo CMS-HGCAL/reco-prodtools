@@ -32,12 +32,12 @@ NPART=1
 #TAG="escott_PDGid${PARTID}_nPart1_Pt${PT}_FullWorkingTestOldPhysicsList"
 #TAG="escott_PDGid${PARTID}_nPart1_Pt${PT}_LindseyPRfullTestTwo"
 #TAG="escott_PDGid${PARTID}_nPart1_Pt${PT}_LindseyPRfullTestCorrectSequence"
-TAG="escott_PDGid${PARTID}_nPart1_Pt${PT}_LindseyPRallThreeSteps"
+TAG="escott_PDGid${PARTID}_nPart1_Pt${PT}_AutomaticMulticlusterTest"
 
 EOS="/eos/cms/store/group/dpg_hgcal/comm_hgcal/escott"
 
 #DATE="20160729"
-DATE="20161206"
+DATE="20161208"
 
 EXTRALABEL=""
 #EXTRALABEL="_fullPre8setup"
@@ -57,6 +57,8 @@ EXTRALABEL=""
 #EXTRALABEL="DepthCone1"
 #EXTRALABEL="KeepClusters"
 #EXTRALABEL="Amended"
+#EXTRALABEL="AutomaticMulticlusterTest"
+
 
 if [ "$TIER" == "GSD" ]
 then

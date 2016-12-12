@@ -37,17 +37,19 @@ print "PDGid = ",PDGid
 print "PT = ",PT
 os.system('./edSubmitGunImproved.sh RECO '+PDGid+' '+PT)
 
-time.sleep(60)
-jobstring = processCmd('bjobs | grep RECO | wc -l').split('\n')[1]
-while jobstring != '0':
-    print "RECO jobs still running"
-    time.sleep(60)
-    jobstring = processCmd('bjobs')
+print "DONE - RECO jobs are submitted"
 
-print "about to submit NTUP jobs"
-print "PDGid = ",PDGid
-print "PT = ",PT
-os.system('./edSubmitGunImproved.sh NTUP '+PDGid+' '+PT)
-
-print ""
-print "DONE - NTUP jobs are submitted"
+#time.sleep(60)
+#jobstring = processCmd('bjobs | grep RECO | wc -l').split('\n')[1]
+#while jobstring != '0':
+#    print "RECO jobs still running"
+#    time.sleep(60)
+#    jobstring = processCmd('bjobs')
+#
+#print "about to submit NTUP jobs"
+#print "PDGid = ",PDGid
+#print "PT = ",PT
+#os.system('./edSubmitGunImproved.sh NTUP '+PDGid+' '+PT)
+#
+#print ""
+#print "DONE - NTUP jobs are submitted"
