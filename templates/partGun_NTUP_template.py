@@ -6,6 +6,7 @@ process.load('Configuration.Geometry.GeometryExtended2023D3Reco_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load("FWCore.MessageService.MessageLogger_cfi")
+#process.load("RecoLocalCalo.HGCalRecProducers.hgcalLayerClusters_cfi")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(DUMMYEVTSPERJOB) )
 
@@ -27,4 +28,8 @@ process.TFileService = cms.Service("TFileService",
 
                                    )
 
+#process.hgcalLayerClusters.minClusters = cms.uint32(0)
+#process.hgcalLayerClusters.realSpaceCone = cms.bool(True)
+
 process.p = cms.Path(process.ana)
+#process.p = cms.Path(process.hgcalLayerClusters+process.ana)
