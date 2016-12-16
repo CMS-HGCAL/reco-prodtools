@@ -75,8 +75,6 @@ process.mix.digitizers = cms.PSet(process.theDigitizersValid)
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 
-process.RandomNumberGeneratorService.generator.initialSeed = DUMMYSEED
-
 process.generator = cms.EDProducer("GUNPRODUCERTYPE",
     AddAntiParticle = cms.bool(True),
     PGunParameters = cms.PSet(
