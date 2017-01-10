@@ -33,7 +33,44 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(DUMMYEVTSPERJOB)
 )
 
-process.RandomNumberGeneratorService.generator.initialSeed = cms.untracked.uint32(DUMMYSEED)
+process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService",
+                                                   generator = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('HepJamesRandom')
+                ),
+                                                   mix = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                ),
+                                                   VtxSmeared = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                ),
+                                                   g4SimHits = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                ),
+                                                   simMuonGEMDigis = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                ),
+                                                   simMuonME0Digis = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                ),
+                                                   simMuonCSCDigis = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                ),
+                                                   simMuonDTDigis = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                ),
+                                                   simMuonRPCDigis = cms.PSet(
+                initialSeed = cms.untracked.uint32(DUMMYSEED),
+                engineName = cms.untracked.string('TRandom3')
+                )
+                                                   )
 
 
 # Input source
