@@ -2,11 +2,11 @@ import FWCore.ParameterSet.Config as cms
 from Configuration.StandardSequences.Eras import eras
 
 process = cms.Process("Demo")
-process.load('Configuration.Geometry.GeometryExtended2023D3Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2023D4Reco_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.load('RecoLocalCalo.HGCalRecHitDump.imagingClusterHGCal_cfi')
+#process.load("RecoLocalCalo.HGCalRecProducers.hgcalLayerClusters_cfi")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(DUMMYEVTSPERJOB) )
 
@@ -20,7 +20,6 @@ process.source = cms.Source("PoolSource",
 
 process.ana = cms.EDAnalyzer('HGCalAnalysis',
                              detector = cms.string("all"),
-                             depthClusteringCone = cms.double(0.015),
                              rawRecHits = cms.bool(True)
 )
 
@@ -28,7 +27,9 @@ process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string("file:DUMMYFILENAME")
 
                                    )
-process.imagingClusterHGCal.ecut = cms.double(0.01)
-process.imagingClusterHGCal.eventsToDisplay = cms.untracked.uint32(1)
 
-process.p = cms.Path(process.imagingClusterHGCal+process.ana)
+#process.hgcalLayerClusters.minClusters = cms.uint32(0)
+#process.hgcalLayerClusters.realSpaceCone = cms.bool(True)
+
+process.p = cms.Path(process.ana)
+#process.p = cms.Path(process.hgcalLayerClusters+process.ana)

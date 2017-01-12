@@ -15,8 +15,8 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
-process.load('Configuration.Geometry.GeometryExtended2023D3Reco_cff')
-process.load('Configuration.Geometry.GeometryExtended2023D3_cff')
+process.load('Configuration.Geometry.GeometryExtended2023D4Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2023D4_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
 process.load('Configuration.StandardSequences.VtxSmearedNoSmear_cff')
@@ -33,48 +33,13 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(DUMMYEVTSPERJOB)
 )
 
-process.RandomNumberGeneratorService = cms.Service("RandomNumberGeneratorService",
-                                                   generator = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('HepJamesRandom')
-                ),
-                                                   mix = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                ),
-                                                   VtxSmeared = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                ),
-                                                   g4SimHits = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                ),
-                                                   simMuonGEMDigis = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                ),
-                                                   simMuonME0Digis = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                ),
-                                                   simMuonCSCDigis = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                ),
-                                                   simMuonDTDigis = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                ),
-                                                   simMuonRPCDigis = cms.PSet(
-                initialSeed = cms.untracked.uint32(DUMMYSEED),
-                engineName = cms.untracked.string('TRandom3')
-                )
-                                                   )
-
+# random seeds
+process.RandomNumberGeneratorService.generator.initialSeed = cms.untracked.uint32(DUMMYSEED)
+process.RandomNumberGeneratorService.VtxSmeared.initialSeed = cms.untracked.uint32(DUMMYSEED)
 
 # Input source
 process.source = cms.Source("EmptySource")
+process.source.firstLuminosityBlock = cms.untracked.uint32(DUMMYSEED)
 
 process.options = cms.untracked.PSet(
 
@@ -110,8 +75,6 @@ process.genstepfilter.triggerConditions=cms.vstring("generation_step")
 process.mix.digitizers = cms.PSet(process.theDigitizersValid)
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
-
-process.RandomNumberGeneratorService.generator.initialSeed = DUMMYSEED
 
 process.generator = cms.EDProducer("GUNPRODUCERTYPE",
     AddAntiParticle = cms.bool(True),
@@ -156,10 +119,10 @@ process.options.numberOfStreams=cms.untracked.uint32(0)
 #process.genParticles.src = cms.InputTag("generator:unsmeared")
 
 # Automatic addition of the customisation function from SLHCUpgradeSimulations.Configuration.combinedCustoms
-from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023tilted
+#from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023tilted
 
 #call to customisation function cust_2023tilted imported from SLHCUpgradeSimulations.Configuration.combinedCustoms
-process = cust_2023tilted(process)
+#process = cust_2023tilted(process)
 
 # Automatic addition of the customisation function from HLTrigger.Configuration.customizeHLTforMC
 from HLTrigger.Configuration.customizeHLTforMC import customizeHLTforFullSim
