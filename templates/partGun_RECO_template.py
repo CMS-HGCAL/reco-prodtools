@@ -149,4 +149,7 @@ process = miniAOD_customizeAllMC(process)
 # Customisation from command line
 process.hgcalLayerClusters.minClusters = cms.uint32(0)
 #process.hgcalLayerClusters.realSpaceCone = cms.bool(True)
-#process.hgcalLayerClusters.multiclusterRadius = cms.double(4.)
+#process.hgcalLayerClusters.multiclusterRadius = cms.double(2.)
+process.hgcalLayerClusters.dependSensor = cms.bool(True)
+process.hgcalLayerClusters.ecut = cms.double(3.)
+process.hgcalLayerClusters.kappa = cms.double(9.)
