@@ -21,7 +21,11 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
         DUMMYINPUTFILELIST
     ),
-    duplicateCheckMode = cms.untracked.string("noDuplicateCheck")
+    duplicateCheckMode = cms.untracked.string("noDuplicateCheck"),
+    inputCommands=cms.untracked.vstring(
+        'keep *',
+        'drop EcalEBTriggerPrimitiveDigisSorted_simEcalEBTriggerPrimitiveDigis__HLT'
+    )
 )
 
 process.ana = cms.EDAnalyzer('HGCalAnalysis',
