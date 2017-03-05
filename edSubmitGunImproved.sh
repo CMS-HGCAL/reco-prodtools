@@ -35,23 +35,11 @@ GSDDATE="20170125" #for default, sensor dependent pions and photons
 #GSDDATE="20170127" #for large photon pt35 sample (same tag)
 #GSDDATE="20170207" #for photon superclustering
 
-RECODATE="20170222"
+RECODATE="20170305"
 
 #EXTRALABEL=""
-#EXTRALABEL="_FH3BH5"
-#EXTRALABEL="_FH5BH7"
-#EXTRALABEL="_FH2BH2R03"
-#EXTRALABEL="_FH3BH5R03"
-#EXTRALABEL="_FH5BH7R03"
-#EXTRALABEL="_FH5BH7R03"
-#EXTRALABEL="CorrectCartesian10mm"
-#EXTRALABEL="CorrectCartesian15mm"
-#EXTRALABEL="CorrectCartesian20mm"
-#EXTRALABEL="CorrectCartesian25mm"
-#EXTRALABEL="CorrectCartesian30mm"
-#EXTRALABEL="CorrectCartesian40mm"
-#EXTRALABEL="CorrectCartesian50mm"
-EXTRALABEL="CorrectCartesian60mm"
+#EXTRALABEL="UpdatedEScale_50mm"
+EXTRALABEL="UpdatedEScale_EE2FH4BH4"
 #EXTRALABEL=""
 
 
