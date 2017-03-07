@@ -148,11 +148,9 @@ process = miniAOD_customizeAllMC(process)
 
 # Customisation from command line
 process.hgcalLayerClusters.minClusters = cms.uint32(0)
-process.hgcalLayerClusters.realSpaceCone = cms.bool(True)
-process.hgcalLayerClusters.multiclusterRadii = cms.vdouble(2.,5.,5.)
-process.hgcalLayerClusters.dependSensor = cms.bool(True)
-process.hgcalLayerClusters.ecut = cms.double(3.)
-process.hgcalLayerClusters.kappa = cms.double(9.)
-#process.hgcalLayerClusters.deltac = cms.vdouble(2.,3.,5.)
-#process.hgcalLayerClusters.deltac = cms.vdouble(2.,5.,7.)
-#process.hgcalLayerClusters.multiclusterRadius = cms.double(0.03)
+#those below are all now the default values - just there to illustrate what can be customised
+#process.hgcalLayerClusters.dependSensor = cms.bool(True)
+#process.hgcalLayerClusters.ecut = cms.double(3.) #multiple of sigma noise
+#process.hgcalLayerClusters.kappa = cms.double(9.) #multiple of sigma noise
+#process.hgcalLayerClusters.multiclusterRadii = cms.vdouble(2.,2.,2.) #(EE,FH,BH)
+#process.hgcalLayerClusters.deltac = cms.vdouble(2.,2.,2.) #(EE,FH,BH)

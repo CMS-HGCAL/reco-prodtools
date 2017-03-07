@@ -35,11 +35,12 @@ GSDDATE="20170125" #for default, sensor dependent pions and photons
 #GSDDATE="20170127" #for large photon pt35 sample (same tag)
 #GSDDATE="20170207" #for photon superclustering
 
-RECODATE="20170305"
+RECODATE="20170306"
 
 #EXTRALABEL=""
 #EXTRALABEL="UpdatedEScale_50mm"
-EXTRALABEL="UpdatedEScale_EE2FH4BH4"
+#EXTRALABEL="UpdatedEScale_EE2FH4BH4"
+EXTRALABEL="_KDmultiTest_20mm"
 #EXTRALABEL=""
 
 
