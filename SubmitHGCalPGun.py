@@ -31,6 +31,7 @@ def parseOptions():
     parser.add_option(  '', '--eosArea',dest='eosArea',type='string', default='/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production',help='path to the eos area where the output jobs will be staged out')
     parser.add_option('-d', '--datTier',dest='DTIER',  type='string', default='GSD',help='data tier to run: "GSD" (GEN-SIM-DIGI) or "RECO", default is "GSD"')
     parser.add_option('-i', '--inDir',  dest='inDir',  type='string', default='',   help='name of the previous stage dir (relative to the local submission or "eosArea"), to be used as the input for next stage, not applicable for GEN stage')
+    parser.add_option('-r', '--RelVal',  dest='RELVAL',  type='string', default='',   help='name of relval reco dataset to be ntuplized (currently implemented only for NTUP data Tier')
 
     # store options and arguments as global variables
     global opt, args
@@ -51,7 +52,7 @@ def parseOptions():
     if opt.gunType not in partGunTypes:
         parser.error('Particle gun type ' + opt.gunType + ' is not supported. Exiting...')
         sys.exit()
-
+        
     # set the default config, if not specified in options
     if (opt.CONFIGFILE == ''):
         opt.CONFIGFILE = 'templates/partGun_'+opt.DTIER+'_template.py'
@@ -75,6 +76,10 @@ def parseOptions():
     if not (opt.PARTID==''):
         particles = []
         particles.append(opt.PARTID)
+    
+    # overwrite for RelVal
+    if opt.RELVAL != '':
+        particles=['dummy']
 
 ### processing the external os commands
 def processCmd(cmd, quite = 0):
@@ -95,7 +100,13 @@ def printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     print 'CMSSW BASE: ', CMSSW_BASE
     print 'CMSSW VER:  ', CMSSW_VERSION,'[', SCRAM_ARCH, ']'
     print 'CONFIGFILE: ', opt.CONFIGFILE
-    print 'INPUTS:     ', [opt.inDir, 'Particle gun type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+']'][int(opt.DTIER=='GSD')]
+    # relval takes precedence...
+    if (opt.RELVAL == ''):
+        curr_input= opt.inDir
+    else:
+        curr_input= opt.RELVAL
+        
+    print 'INPUTS:     ', [curr_input, 'Particle gun type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
     print 'STORE AREA: ', [opt.eosArea, currentDir][int(opt.LOCAL)]
     print 'OUTPUT DIR: ', outDir
     print 'QUEUE:      ', opt.QUEUE
@@ -103,13 +114,26 @@ def printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     print '--------------------'
 
 ### prepare the list of input GSD files for RECO stage
-def getInputFileList(inPath, inSubDir, local, pattern):
+def getInputFileList(DASquery,inPath, inSubDir, local, pattern):
     inputList = []
-    if (local):
-        inputList = [f for f in os.listdir(inPath+'/'+inSubDir) if (os.path.isfile(os.path.join(inPath+'/'+inSubDir, f)) and (fnmatch.fnmatch(f, pattern)))]
+    if not DASquery:
+        if (local):
+            inputList = [f for f in os.listdir(inPath+'/'+inSubDir) if (os.path.isfile(os.path.join(inPath+'/'+inSubDir, f)) and (fnmatch.fnmatch(f, pattern)))]
+        else:
+            # this is a work-around, need to find a proper way to do it for EOS
+            inputList = [f for f in processCmd(eosExec + ' ls ' + inPath+'/'+inSubDir+'/').split('\n') if ( (processCmd(eosExec + ' fileinfo ' + inPath+'/'+inSubDir+'/' + f).split(':')[0].lstrip() == 'File') and (fnmatch.fnmatch(f, pattern)))]
     else:
-        # this is a work-around, need to find a proper way to do it for EOS
-        inputList = [f for f in processCmd(eosExec + ' ls ' + inPath+'/'+inSubDir+'/').split('\n') if ( (processCmd(eosExec + ' fileinfo ' + inPath+'/'+inSubDir+'/' + f).split(':')[0].lstrip() == 'File') and (fnmatch.fnmatch(f, pattern)))]
+        # DASquery will be made based on inPath (i.e. opt.RELVAL)
+        
+        relvalname=inPath.split('/')[1]
+        cmd='das_client --limit 10000 --query="file dataset='+inPath+'" | grep '+relvalname
+        status, thisoutput = commands.getstatusoutput(cmd)
+        if status !=0:
+            print "Error in processing command: "+cmd
+            print "Did you forget running voms-proxy-init?"
+            sys.exit(1)
+        inputList=thisoutput.split()
+
     return inputList
 
 ### submission of GSD/RECO production
@@ -126,6 +150,11 @@ def submitHGCalProduction():
     SCRAM_ARCH = os.getenv('SCRAM_ARCH')
     commonFileNamePrefix = 'partGun'
     partGunType = 'FlatRandom%sGunProducer' % opt.gunType
+
+    # RELVAL
+    DASquery=False
+    if opt.RELVAL != '':
+        DASquery=True
 
     # previous data tier
     previousDataTier = ''
@@ -145,21 +174,32 @@ def submitHGCalProduction():
             print 'Directory '+outDir+' already exists. Exiting...'
             sys.exit()
     elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
-        outDir=opt.inDir
+        if not DASquery:
+            outDir=opt.inDir
+        else:
+            # create an ouput directory based on relval name
+            outDir=opt.RELVAL.replace('/','_')
         processCmd('mkdir -p '+outDir+'/cfg/')
         processCmd('mkdir -p '+outDir+'/std/')
-    # prepare dir for GSD outputs locally or at EOS
+            
+
+  # prepare dir for GSD outputs locally or at EOS
     if (opt.LOCAL):
         processCmd('mkdir -p '+outDir+'/'+opt.DTIER+'/')
         recoInputPrefix = 'file:'+currentDir+'/'+outDir+'/'+previousDataTier+'/'
     else:
         processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/'+opt.DTIER+'/');
         recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+outDir+'/'+previousDataTier+'/'
+    # in case of relval always take reconInput from /store...
+    if DASquery: recoInputPrefix=''
+    
     # determine number of jobs for GSD, in case of 'RECO'/'NTUP' only get the input GSD/RECO path
+
     if (opt.DTIER == 'GSD'):
         njobs = int(math.ceil(float(opt.NEVTS)/float(opt.EVTSPERJOB)))
     elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
         inPath = [opt.eosArea+'/'+opt.inDir, currentDir+'/'+opt.inDir][opt.LOCAL]
+        if DASquery: inPath=opt.RELVAL
 
     # print out some info
     printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir)
@@ -172,28 +212,41 @@ def submitHGCalProduction():
         eventsPerPrevJob = 0
         # in case of 'RECO' or 'NTUP', get the input file list for given particle, determine number of jobs, get also basic GSD/RECO info
         if (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
-            inputFilesList = getInputFileList(inPath, previousDataTier, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+particle+'_*.root')
+            inputFilesList = getInputFileList(DASquery,inPath, previousDataTier, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+particle+'_*.root')
             if len(inputFilesList) == 0:
                 continue
-            # build regular expression for splitting
-            regex = re.compile(ur"partGun_PDGid[0-9]*_x([0-9]*)_(E|Pt)([0-9]*[.]?[0-9]*)To([0-9]*[.]?[0-9]*)_.*\.root")
-            matches = regex.match(inputFilesList[0])
-            eventsPerPrevJob = int(matches.group(1))
-            opt.gunType = matches.group(2)
-            opt.thresholdMin = float(matches.group(3))
-            opt.thresholdMax = float(matches.group(4))
-            nFilesPerJob = max(int(math.floor(float(min(opt.EVTSPERJOB, len(inputFilesList)*eventsPerPrevJob))/float(eventsPerPrevJob))),1)
-            njobs = int(math.ceil(float(len(inputFilesList))/float(nFilesPerJob)))
+            # build regular expression for splitting (NOTE: none of this is used for relval!)
+            if not DASquery:
+                regex = re.compile(ur"partGun_PDGid[0-9]*_x([0-9]*)_(E|Pt)([0-9]*[.]?[0-9]*)To([0-9]*[.]?[0-9]*)_.*\.root")
+                matches = regex.match(inputFilesList[0])
+                eventsPerPrevJob = int(matches.group(1))
+                opt.gunType = matches.group(2)
+                opt.thresholdMin = float(matches.group(3))
+                opt.thresholdMax = float(matches.group(4))
+                nFilesPerJob = max(int(math.floor(float(min(opt.EVTSPERJOB, len(inputFilesList)*eventsPerPrevJob))/float(eventsPerPrevJob))),1)
+                njobs = int(math.ceil(float(len(inputFilesList))/float(nFilesPerJob)))
+            else:
+                njobs=len(inputFilesList)
+                nFilesPerJob = 1
 
         for job in range(1,int(njobs)+1):
-            print 'Submitting job '+str(job)+' out of '+str(njobs)+' for particle ID '+particle
+            submittxt=' for particle ID '+particle
+            if DASquery : submittxt=' for RelVal:'+opt.RELVAL
+            print 'Submitting job '+str(job)+' out of '+str(njobs)+submittxt
+
             # prepare the out file and cfg file by replacing DUMMY entries according to input options
-            basename = commonFileNamePrefix + '_PDGid'+particle+'_x'+str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD'])+'_' + opt.gunType+str(opt.thresholdMin)+'To'+str(opt.thresholdMax)+'_'+opt.DTIER+'_'+str(job)
+            if DASquery:
+                basename=outDir+'_'+opt.DTIER+'_'+str(job)
+            else:
+                basename = commonFileNamePrefix + '_PDGid'+particle+'_x'+str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD'])+'_' + opt.gunType+str(opt.thresholdMin)+'To'+str(opt.thresholdMax)+'_'+opt.DTIER+'_'+str(job)
+
             cfgfile = basename +'.py'
             outfile = basename +'.root'
+
             processCmd('cp '+opt.CONFIGFILE+' '+outDir+'/cfg/'+cfgfile)
             processCmd("sed -i 's~DUMMYFILENAME~"+outfile+"~g' "+outDir+'/cfg/'+cfgfile)
             processCmd("sed -i 's~DUMMYSEED~"+str(job)+"~g' "+outDir+'/cfg/'+cfgfile)
+
             if (opt.DTIER == 'GSD'):
                 # prepare GEN-SIM-DIGI inputs
                 nParticles = ','.join([particle for i in range(0,opt.NPART)])
@@ -211,6 +264,12 @@ def submitHGCalProduction():
                 inputFiles = '"' + '", "'.join([recoInputPrefix+str(f) for f in inputFilesListPerJob]) + '"'
                 processCmd("sed -i 's~DUMMYINPUTFILELIST~"+inputFiles+"~g' "+outDir+'/cfg/'+cfgfile)
                 processCmd("sed -i 's~DUMMYEVTSPERJOB~"+str(-1)+"~g' "+outDir+'/cfg/'+cfgfile)
+                if DASquery:
+                    # in case of relval centrally produced use readOfficialReco flag
+                    processCmd("sed -i 's~DUMMYROR~True~g' "+outDir+'/cfg/'+cfgfile)
+                else:
+                    # otherwise put False
+                    processCmd("sed -i 's~DUMMYROR~False~g' "+outDir+'/cfg/'+cfgfile)
 
             # submit job
             cmd = 'bsub -o '+outDir+'/std/'+basename +'.out -e '+outDir+'/std/'+basename +'.err -q '+opt.QUEUE+' -J '+basename+' "SubmitFileGSD.sh '+currentDir+' '+outDir+' '+cfgfile+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+'"'
