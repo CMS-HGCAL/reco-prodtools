@@ -77,6 +77,18 @@ python SubmitHGCalPGun.py \
   [--local] \
   --tag MYTAG
 ```
+## RelVal
+
+It can also run directly on RelVal using the same NTUP cfg. It runs das_client internally so you need to have a valid proxy (i.e. run voms-proxy-init before). The output goes in an area (eos/local) named after the RelVal dataset with all '/' replaced by underscores.
+
+Typical usage:
+```
+python SubmitHGCalPGun.py \
+  --datTier NTUP \
+  --queue QUEUENAME \
+  [--local] \
+  -r /RelValSingleMu..etc.
+```
 
 
 # to contribute
