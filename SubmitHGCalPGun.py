@@ -26,6 +26,8 @@ def parseOptions():
     parser.add_option(  '', '--thresholdMin',  dest='thresholdMin',  type=float, default=1.0,     help='min. threshold value')
     parser.add_option(  '', '--thresholdMax',  dest='thresholdMax',  type=float, default=35.0,    help='max. threshold value')
     parser.add_option(  '', '--gunType',   dest='gunType',   type='string', default='Pt',    help='Pt or E gun')
+    parser.add_option(  '', '--PU',   dest='PU',   type='string', default='0',    help='PU value (0 is the default)')
+    parser.add_option(  '', '--PUDS',   dest='PUDS',   type='string', default='',    help='PU dataset')
     parser.add_option('-l', '--local',  action='store_true', dest='LOCAL',  default=False, help='store output dir locally instead of at EOS CMG area, default is False.')
     parser.add_option('-y', '--dry-run',action='store_true', dest='DRYRUN', default=False, help='perform a dry run (no jobs are lauched).')
     parser.add_option(  '', '--eosArea',dest='eosArea',type='string', default='/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production',help='path to the eos area where the output jobs will be staged out')
@@ -81,6 +83,15 @@ def parseOptions():
     if opt.RELVAL != '':
         particles=['dummy']
 
+    # sanity check on PU
+    if int(opt.PU) !=0:
+        if opt.DTIER != 'GSD':
+            parser.error('PU simulation not supported for ' + opt.DTIER + '. Exiting...')
+            sys.exit(1)
+        if opt.PUDS == '':
+            parser.error('PU simulation requested you need to specify a dataset (--PUDS). Exiting...')
+            sys.exit(1)
+            
 ### processing the external os commands
 def processCmd(cmd, quite = 0):
     #    print cmd
@@ -105,8 +116,10 @@ def printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
         curr_input= opt.inDir
     else:
         curr_input= opt.RELVAL
-        
+    print 'PU:         ',opt.PU
+    print 'PU dataset: ',opt.PUDS
     print 'INPUTS:     ', [curr_input, 'Particle gun type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
+    
     print 'STORE AREA: ', [opt.eosArea, currentDir][int(opt.LOCAL)]
     print 'OUTPUT DIR: ', outDir
     print 'QUEUE:      ', opt.QUEUE
@@ -155,6 +168,30 @@ def submitHGCalProduction():
     DASquery=False
     if opt.RELVAL != '':
         DASquery=True
+        
+    # in case of PU, GSD needs the MinBias
+    if int(opt.PU) != 0:
+        # we need to get the PU dataset
+        puname=str(opt.PUDS).split('/')[1]
+        # PLEASE NOTE --> using only 20 MinBias files here!! change to to 10000 if you want them all
+        cmd='das_client --limit 20 --query="file dataset='+str(opt.PUDS)+'" | grep '+puname
+        status, thisoutput = commands.getstatusoutput(cmd)
+        if status !=0:
+            print "Error in processing command: "+cmd
+            print "Did you forget running voms-proxy-init?"
+            sys.exit(1)
+        PUList=thisoutput.split()
+        # define as well the template to be added
+        PUSECTION="""
+process.mix.input.nbPileupEvents.averageNumber = cms.double(PUVALUE)
+process.mix.bunchspace = cms.int32(25)
+process.mix.minBunch = cms.int32(-12)
+process.mix.maxBunch = cms.int32(3)
+process.mix.input.fileNames = cms.untracked.vstring(PUFILES)
+        """
+        PUSECTION=PUSECTION.replace('PUVALUE',opt.PU)
+        PUSECTION=PUSECTION.replace('PUFILES',str(PUList))
+        print PUSECTION
 
     # previous data tier
     previousDataTier = ''
@@ -207,6 +244,12 @@ def submitHGCalProduction():
     # submit all the jobs
     print '[Submitting jobs]'
     jobCount=0
+    
+    # read the template file in a single string
+    f_template= open(opt.CONFIGFILE, 'r')
+    template= f_template.read()
+    f_template.close()
+
     for particle in particles:
         nFilesPerJob = 0
         eventsPerPrevJob = 0
@@ -243,35 +286,56 @@ def submitHGCalProduction():
             cfgfile = basename +'.py'
             outfile = basename +'.root'
 
-            processCmd('cp '+opt.CONFIGFILE+' '+outDir+'/cfg/'+cfgfile)
-            processCmd("sed -i 's~DUMMYFILENAME~"+outfile+"~g' "+outDir+'/cfg/'+cfgfile)
-            processCmd("sed -i 's~DUMMYSEED~"+str(job)+"~g' "+outDir+'/cfg/'+cfgfile)
+            s_template=template
+                        
+            s_template=s_template.replace('DUMMYFILENAME',outfile)
+            s_template=s_template.replace('DUMMYSEED',str(job))
 
             if (opt.DTIER == 'GSD'):
+                # first prepare replaces for PU
+                if int(opt.PU) == 0:
+                    # no PU
+                    mixing='mixNoPu_cfi'
+                else:
+                    mixing='mix_POISSON_average_cfi'
+                    s_template=s_template.replace('#DUMMYPUSECTION',PUSECTION)
+                    
                 # prepare GEN-SIM-DIGI inputs
                 nParticles = ','.join([particle for i in range(0,opt.NPART)])
-                processCmd("sed -i 's~DUMMYEVTSPERJOB~"+str(opt.EVTSPERJOB)+"~g' "+outDir+'/cfg/'+cfgfile)
-                processCmd("sed -i 's~DUMMYIDs~"+nParticles+"~g' "+outDir+'/cfg/'+cfgfile)
-                processCmd("sed -i 's~DUMMYTHRESHMIN~"+str(opt.thresholdMin)+"~g' "+outDir+'/cfg/'+cfgfile)
-                processCmd("sed -i 's~DUMMYTHRESHMAX~"+str(opt.thresholdMax)+"~g' "+outDir+'/cfg/'+cfgfile)
-                processCmd("sed -i 's~GUNPRODUCERTYPE~"+str(partGunType)+"~g' "+outDir+'/cfg/'+cfgfile)
-                processCmd("sed -i 's~MAXTHRESHSTRING~Max"+str(opt.gunType)+"~g' "+outDir+'/cfg/'+cfgfile)
-                processCmd("sed -i 's~MINTHRESHSTRING~Min"+str(opt.gunType)+"~g' "+outDir+'/cfg/'+cfgfile)
+                s_template=s_template.replace('DUMMYEVTSPERJOB',str(opt.EVTSPERJOB))
+
+                s_template=s_template.replace('DUMMYIDs',nParticles)
+                s_template=s_template.replace('DUMMYTHRESHMIN',str(opt.thresholdMin))
+                s_template=s_template.replace('DUMMYTHRESHMAX',str(opt.thresholdMax))
+                s_template=s_template.replace('GUNPRODUCERTYPE',str(partGunType))
+                s_template=s_template.replace('MAXTHRESHSTRING',"Max"+str(opt.gunType))
+                s_template=s_template.replace('MINTHRESHSTRING',"Min"+str(opt.gunType))
+                s_template=s_template.replace('DUMMYPU',str(mixing))
+                
+
             elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
                 # prepare RECO inputs
                 inputFilesListPerJob = inputFilesList[(job-1)*nFilesPerJob:(job)*nFilesPerJob]
                 if len(inputFilesListPerJob)==0: continue
                 inputFiles = '"' + '", "'.join([recoInputPrefix+str(f) for f in inputFilesListPerJob]) + '"'
-                processCmd("sed -i 's~DUMMYINPUTFILELIST~"+inputFiles+"~g' "+outDir+'/cfg/'+cfgfile)
-                processCmd("sed -i 's~DUMMYEVTSPERJOB~"+str(-1)+"~g' "+outDir+'/cfg/'+cfgfile)
+                s_template=s_template.replace('DUMMYINPUTFILELIST',inputFiles)
+                s_template=s_template.replace('DUMMYEVTSPERJOB',str(-1))
+
                 if DASquery:
                     # in case of relval centrally produced use readOfficialReco flag
-                    processCmd("sed -i 's~DUMMYROR~True~g' "+outDir+'/cfg/'+cfgfile)
+                    s_template=s_template.replace('DUMMYROR','True')
                 else:
                     # otherwise put False
-                    processCmd("sed -i 's~DUMMYROR~False~g' "+outDir+'/cfg/'+cfgfile)
+                    s_template=s_template.replace('DUMMYROR','False')
 
             # submit job
+            # now write the file from the s_template
+
+            write_template= open(outDir+'/cfg/'+cfgfile, 'w')
+            write_template.write(s_template)
+            write_template.close()
+            
+            
             cmd = 'bsub -o '+outDir+'/std/'+basename +'.out -e '+outDir+'/std/'+basename +'.err -q '+opt.QUEUE+' -J '+basename+' "SubmitFileGSD.sh '+currentDir+' '+outDir+' '+cfgfile+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+'"'
 
             #TODO This could probably be better handled by a job array
