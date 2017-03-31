@@ -39,6 +39,11 @@ are stored locally `in partGun_[MYTAG]_[DATE]`, while the resulting files `partG
 Rule of thumb for GEN-SIM-DIGI: 4 events per `1nh`:
  * 20 events should be possible to finish in queue `8nh`.
  * Ditto, 100 events in `1nd`.
+ 
+## Include PU at the GSD level
+Add options --PU NPUevents --PUDS MinBias_dataset. Remember to 'voms-proxy-init' before so to let the script use das-client. 
+Example of MinBias dataset to use: /MinBias_TuneCUETP8M1_14TeV-pythia8/PhaseIIFall16GS82-90X_upgrade2023_realistic_v1-v1/GEN-SIM
+
 
 ## RECO step
 
