@@ -183,15 +183,16 @@ def submitHGCalProduction():
         PUList=thisoutput.split()
         # define as well the template to be added
         PUSECTION="""
+process.RandomNumberGeneratorService.mix.initialSeed = cms.untracked.uint32(PUSEED)
 process.mix.input.nbPileupEvents.averageNumber = cms.double(PUVALUE)
+process.mix.input.fileNames = cms.untracked.vstring(PUFILES)
 process.mix.bunchspace = cms.int32(25)
 process.mix.minBunch = cms.int32(-12)
 process.mix.maxBunch = cms.int32(3)
-process.mix.input.fileNames = cms.untracked.vstring(PUFILES)
         """
         PUSECTION=PUSECTION.replace('PUVALUE',opt.PU)
         PUSECTION=PUSECTION.replace('PUFILES',str(PUList))
-        print PUSECTION
+        # print PUSECTION
 
     # previous data tier
     previousDataTier = ''
@@ -299,6 +300,8 @@ process.mix.input.fileNames = cms.untracked.vstring(PUFILES)
                 else:
                     mixing='mix_POISSON_average_cfi'
                     s_template=s_template.replace('#DUMMYPUSECTION',PUSECTION)
+                    s_template=s_template.replace('PUSEED',str(job))
+                    
                     
                 # prepare GEN-SIM-DIGI inputs
                 nParticles = ','.join([particle for i in range(0,opt.NPART)])
