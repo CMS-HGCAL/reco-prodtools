@@ -3,8 +3,7 @@ Home of the tools to produce samples for HGCAL reconstruction studies
 
 ## hello world
 
-Setup a `CMSSW_8_1_0_pre15` (`slc6_amd64_gcc530`) according to
-https://github.com/CMS-HGCAL/cmssw
+Set up CMSSW according to https://github.com/CMS-HGCAL/reco-ntuples
 
 Then anywhere,
 ```
