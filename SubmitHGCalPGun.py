@@ -134,11 +134,8 @@ def printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     print 'PU:         ',opt.PU
     print 'PU dataset: ',opt.PUDS
     print 'INPUTS:     ', [curr_input, 'Particle gun type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
-
-    print 'INPUTS:     ', [curr_input, 'Particle gun type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
     if (opt.InConeID!='' and opt.DTIER=='GSD'):
-        print '    IN-CONE: PDG ID '+str(opt.InConeID)+', deltaR in ['+str(opt.MinDeltaR)+ ','+str(opt.MaxDeltaR)+']'+', momentum ratio in ['+str(opt.MinMomRatio)+ ','+str(opt.MaxMomRatio)+']'
-
+        print '             IN-CONE: PDG ID '+str(opt.InConeID)+', deltaR in ['+str(opt.MinDeltaR)+ ','+str(opt.MaxDeltaR)+']'+', momentum ratio in ['+str(opt.MinMomRatio)+ ','+str(opt.MaxMomRatio)+']'
     print 'STORE AREA: ', [opt.eosArea, currentDir][int(opt.LOCAL)]
     print 'OUTPUT DIR: ', outDir
     print 'QUEUE:      ', opt.QUEUE
@@ -392,13 +389,13 @@ process.mix.maxBunch = cms.int32(3)
 
             if(opt.DRYRUN):
                 print 'Dry-run: ['+cmd+']'
-            # else:
-            #     output = processCmd(cmd)
-            #     while ('error' in output):
-            #         time.sleep(1.0);
-            #         output = processCmd(cmd)
-            #         if ('error' not in output):
-            #             print 'Submitted after retry - job '+str(jobCount+1)
+            else:
+                output = processCmd(cmd)
+                while ('error' in output):
+                    time.sleep(1.0);
+                    output = processCmd(cmd)
+                    if ('error' not in output):
+                        print 'Submitted after retry - job '+str(jobCount+1)
 
 
             jobCount += 1
