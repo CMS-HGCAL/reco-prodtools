@@ -25,7 +25,7 @@ def parseOptions():
     parser.add_option('-e', '--evtsperjob', dest='EVTSPERJOB', type=int, default=-1,   help='number of events per job, if set to -1 it will set to a recommended value (GSD: 4events/1nh, RECO:8events/1nh), default is -1')
     parser.add_option('-c', '--cfg',    dest='CONFIGFILE', type='string', default='',help='CMSSW config template name, if empty string the deafult one will be used')
     parser.add_option('-p', '--partID', dest='PARTID', type='string',     default='', help='particle PDG ID, if empty string - run on all supported (11,12,13,14,15,16,22,111,211), default is empty string (all)')
-    parser.add_option('', '--nPart',  dest='NPART',  type=int,   default=10,      help='number of particles of type PARTID to be generated per event, default is 10')
+    parser.add_option('', '--nPart',  dest='NPART',  type=int,   default=1,      help='number of particles of type PARTID to be generated per event, default is 1')
     parser.add_option('', '--thresholdMin',  dest='thresholdMin',  type=float, default=1.0,     help='min. threshold value')
     parser.add_option('', '--thresholdMax',  dest='thresholdMax',  type=float, default=35.0,    help='max. threshold value')
     parser.add_option('', '--gunType',   dest='gunType',   type='string', default='Pt',    help='Pt or E gun')
@@ -84,10 +84,12 @@ def parseOptions():
         parser.error('Particle with ID ' + opt.PARTID + ' is not supported. Exiting...')
         sys.exit()
 
-    # sanity check for generation of particle within the cone (require to be compatibe with NPART==1 and supported particles)
-    if (opt.InConeID != '') and (opt.InConeID not in particles or opt.NPART != 1):
-        print opt.InConeID in particles
-        parser.error('InCone particle with ID {} is not supported, or incompatible with NPART {}. Exiting...'.format(opt.InConeID, opt.NPART))
+    # sanity check for generation of particle within the cone (require to be compatibe with NPART==1, gunType==Pt and supported particles)
+    if (opt.InConeID != '') and (opt.InConeID not in particles):
+        parser.error('InCone particle with ID {} is not supported. Exiting...'.format(opt.InConeID))
+        sys.exit()
+    if (opt.InConeID != '') and (opt.NPART != 1 or opt.gunType != 'Pt'):
+        parser.error('In-cone multi-particle gun is incompatible with options NPART = {} (must be 1) or with gunType = {} (gun-type must be Pt). Exiting...'.format(opt.NPART, opt.gunType))
         sys.exit()
 
     if not (opt.PARTID == ''):
