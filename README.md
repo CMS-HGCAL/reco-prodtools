@@ -24,11 +24,32 @@ To produce `NEVENTS` GEN-SIM-DIGI events with `NPART` particles (per event) of t
   --partID PART_PDGID
   --nPart NPART
   --thresholdMin PTMIN
-  --thresholdMin PTMAX
+  --thresholdMax PTMAX
   --gunType GUNTYPE
   [--local]
   --tag MYTAG
 ```
+To produce `NEVENTS` GEN-SIM-DIGI events with pair of particles within given angular distance ΔR(η,φ) (per event), where the first particle is of type `PART_PDGID` and in the p_T range from `PTMIN` to `PTMAX`, and the second one is of type `INCONE_PART_PDGID` and at distance from `DRMIN` to `DRMAX` and with p_T in range from `PTRATIO_MIN` to `PTRATIO_MAX` relative to the first particle, one should run:
+```
+  python SubmitHGCalPGun.py
+  --datTier GSD
+  --nevts NEVENTS
+  --evtsperjob NPERJOB
+  --queue QUEUENAME
+  --partID PART_PDGID
+  --nPart 1
+  --thresholdMin PTMIN
+  --thresholdMax PTMAX
+  --gunType Pt
+  --InConeID INCONE_PART_PDGID
+  --MinDeltaR DRMIN
+  --MaxDeltaR DRMAX
+  --MinMomRatio PTRATIO_MIN
+  --MaxMomRatio PTRATIO_MAX
+  [--local]
+  --tag MYTAG
+```
+One should also note that for the genertion of pairs of particles within a given cone, one has to use the "Pt" gun.
 
 The script will create a directory called `partGun_[MYTAG]_[DATE]` locally or on the CMG EOS area (see options), and submit jobs to queue `QUEUENAME` with `NPERJOB` events per job,
 `NEVENTS` in total.
