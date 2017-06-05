@@ -49,7 +49,7 @@ process.TFileService = cms.Service("TFileService",
 
                                    )
 
-reRunClustering = True
+reRunClustering = DUMMYRECLUST
 
 if reRunClustering:
     # process.hgcalLayerClusters.minClusters = cms.uint32(0)
