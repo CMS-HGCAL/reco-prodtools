@@ -25,7 +25,7 @@ def parseOptions():
     parser.add_option('-e', '--evtsperjob', dest='EVTSPERJOB', type=int, default=-1,   help='number of events per job, if set to -1 it will set to a recommended value (GSD: 4events/1nh, RECO:8events/1nh), default is -1')
     parser.add_option('-c', '--cfg',    dest='CONFIGFILE', type='string', default='',help='CMSSW config template name, if empty string the deafult one will be used')
     parser.add_option('-p', '--partID', dest='PARTID', type='string',     default='', help='string of particle PDG IDs separated by comma, if empty string - run on all supported (11,12,13,14,15,16,22,111,211,130), default is empty string (all)')
-    parser.add_option('', '--nPart',  dest='NPART',  type=int,   default=1,      help='number of particles of type PARTID to be generated per event, default is 1')
+    parser.add_option('', '--nPart',  dest='NPART',  type=int,   default=1,      help='number of times particles of type(s) PARTID will be generated per event, default is 1')
     parser.add_option('', '--thresholdMin',  dest='thresholdMin',  type=float, default=1.0,     help='min. threshold value')
     parser.add_option('', '--thresholdMax',  dest='thresholdMax',  type=float, default=35.0,    help='max. threshold value')
     parser.add_option('', '--gunType',   dest='gunType',   type='string', default='Pt',    help='Pt or E gun')
@@ -137,7 +137,7 @@ def printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
         curr_input= opt.RELVAL
     print 'PU:         ',opt.PU
     print 'PU dataset: ',opt.PUDS
-    print 'INPUTS:     ', [curr_input, 'Particle gun type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
+    print 'INPUTS:     ', [curr_input, 'Particle gun type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' times per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
     if (opt.InConeID!='' and opt.DTIER=='GSD'):
         print '             IN-CONE: PDG ID '+str(opt.InConeID)+', deltaR in ['+str(opt.MinDeltaR)+ ','+str(opt.MaxDeltaR)+']'+', momentum ratio in ['+str(opt.MinMomRatio)+ ','+str(opt.MaxMomRatio)+']'
     print 'STORE AREA: ', [opt.eosArea, currentDir][int(opt.LOCAL)]
@@ -305,7 +305,7 @@ process.mix.maxBunch = cms.int32(3)
                 continue
             # build regular expression for splitting (NOTE: none of this is used for relval!)
             if not DASquery:
-                regex = re.compile(ur"partGun_PDGid[0-9]*_x([0-9]*)_(E|Pt)([0-9]*[.]?[0-9]*)To([0-9]*[.]?[0-9]*)_.*\.root")
+                regex = re.compile(ur"partGun_PDGid[0-9]*[_id[0-9]*]*_x([0-9]*)_(E|Pt)([0-9]*[.]?[0-9]*)To([0-9]*[.]?[0-9]*)_.*\.root")
                 matches = regex.match(inputFilesList[0])
                 eventsPerPrevJob = int(matches.group(1))
                 opt.gunType = matches.group(2)
