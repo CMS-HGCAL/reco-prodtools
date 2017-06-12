@@ -31,7 +31,7 @@ def parseOptions():
     parser.add_option('', '--gunType',   dest='gunType',   type='string', default='Pt',    help='Pt or E gun')
     parser.add_option('', '--PU',   dest='PU',   type='string', default='0',    help='PU value (0 is the default)')
     parser.add_option('', '--PUDS',   dest='PUDS',   type='string', default='',    help='PU dataset')
-    parser.add_option('', '--InConeID', dest='InConeID',   type='string',     default='', help='PDG ID for sinlge particle to be generated in the cone (supported as PARTID), default is empty string (none)')
+    parser.add_option('', '--InConeID', dest='InConeID',   type='string',     default='', help='PDG ID for single particle to be generated in the cone (supported as PARTID), default is empty string (none)')
     parser.add_option('', '--MinDeltaR',  dest='MinDeltaR',  type=float, default=0.3, help='min. DR value')
     parser.add_option('', '--MaxDeltaR',  dest='MaxDeltaR',  type=float, default=0.4, help='max. DR value')
     parser.add_option('', '--MinMomRatio',  dest='MinMomRatio',  type=float, default=0.5, help='min. momentum ratio for particle inside of the cone and particle that defines the cone')
@@ -78,7 +78,7 @@ def parseOptions():
         if opt.EVTSPERJOB==-1:
             opt.EVTSPERJOB = queues_evtsperjob[opt.QUEUE] # set the recommnded number of events per job, if requested
 
-    # list of supported particles, check if requested partID list is subset of the upported ones
+    # list of supported particles, check if requested partID list is a subset of the list of the supported ones
     global particles
     particles = ['22', '111', '211', '11', '13', '15', '12', '14', '16', '130']
     inPartID = [p.strip(" ") for p in opt.PARTID.split(",")] # prepare list of requested IDs (split by ",", strip white spaces)
