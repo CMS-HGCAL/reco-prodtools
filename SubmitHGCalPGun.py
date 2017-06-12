@@ -24,14 +24,14 @@ def parseOptions():
     parser.add_option('-n', '--nevts',  dest='NEVTS',  type=int,       default=100,  help='total number of events, applicable to runs with GEN stage, default is 100')
     parser.add_option('-e', '--evtsperjob', dest='EVTSPERJOB', type=int, default=-1,   help='number of events per job, if set to -1 it will set to a recommended value (GSD: 4events/1nh, RECO:8events/1nh), default is -1')
     parser.add_option('-c', '--cfg',    dest='CONFIGFILE', type='string', default='',help='CMSSW config template name, if empty string the deafult one will be used')
-    parser.add_option('-p', '--partID', dest='PARTID', type='string',     default='', help='particle PDG ID, if empty string - run on all supported (11,12,13,14,15,16,22,111,211), default is empty string (all)')
+    parser.add_option('-p', '--partID', dest='PARTID', type='string',     default='', help='string of particle PDG IDs separated by comma, if empty string - run on all supported (11,12,13,14,15,16,22,111,211,130), default is empty string (all)')
     parser.add_option('', '--nPart',  dest='NPART',  type=int,   default=1,      help='number of particles of type PARTID to be generated per event, default is 1')
     parser.add_option('', '--thresholdMin',  dest='thresholdMin',  type=float, default=1.0,     help='min. threshold value')
     parser.add_option('', '--thresholdMax',  dest='thresholdMax',  type=float, default=35.0,    help='max. threshold value')
     parser.add_option('', '--gunType',   dest='gunType',   type='string', default='Pt',    help='Pt or E gun')
     parser.add_option('', '--PU',   dest='PU',   type='string', default='0',    help='PU value (0 is the default)')
     parser.add_option('', '--PUDS',   dest='PUDS',   type='string', default='',    help='PU dataset')
-    parser.add_option('', '--InConeID', dest='InConeID',   type='string',     default='', help='PDG ID for particle to be generated in the cone (supported as PARTID), default is empty string (none)')
+    parser.add_option('', '--InConeID', dest='InConeID',   type='string',     default='', help='PDG ID for single particle to be generated in the cone (supported as PARTID), default is empty string (none)')
     parser.add_option('', '--MinDeltaR',  dest='MinDeltaR',  type=float, default=0.3, help='min. DR value')
     parser.add_option('', '--MaxDeltaR',  dest='MaxDeltaR',  type=float, default=0.4, help='max. DR value')
     parser.add_option('', '--MinMomRatio',  dest='MinMomRatio',  type=float, default=0.5, help='min. momentum ratio for particle inside of the cone and particle that defines the cone')
@@ -42,6 +42,7 @@ def parseOptions():
     parser.add_option('-d', '--datTier', dest='DTIER',  type='string', default='GSD', help='data tier to run: "GSD" (GEN-SIM-DIGI) or "RECO", default is "GSD"')
     parser.add_option('-i', '--inDir',  dest='inDir',  type='string', default='',   help='name of the previous stage dir (relative to the local submission or "eosArea"), to be used as the input for next stage, not applicable for GEN stage')
     parser.add_option('-r', '--RelVal',  dest='RELVAL',  type='string', default='',   help='name of relval reco dataset to be ntuplized (currently implemented only for NTUP data Tier')
+    parser.add_option('', '--noReClust',  action='store_false', dest='RECLUST',  default=True, help='do not re-run RECO-level clustering at NTUP step, default is True (do re-run the clustering).')
 
     # store options and arguments as global variables
     global opt, args
@@ -77,11 +78,12 @@ def parseOptions():
         if opt.EVTSPERJOB==-1:
             opt.EVTSPERJOB = queues_evtsperjob[opt.QUEUE] # set the recommnded number of events per job, if requested
 
-    # list of supported particles, check if requested partID is supported
+    # list of supported particles, check if requested partID list is a subset of the list of the supported ones
     global particles
-    particles = ['22', '111', '211', '11', '13', '15', '12', '14', '16']
-    if not (opt.PARTID in particles or opt.PARTID == ''):
-        parser.error('Particle with ID ' + opt.PARTID + ' is not supported. Exiting...')
+    particles = ['22', '111', '211', '11', '13', '15', '12', '14', '16', '130']
+    inPartID = [p.strip(" ") for p in opt.PARTID.split(",")] # prepare list of requested IDs (split by ",", strip white spaces)
+    if not (set(inPartID) < set(particles) or opt.PARTID == ''):
+        parser.error('Particle(s) with ID(s) ' + opt.PARTID + ' is not supported. Exiting...')
         sys.exit()
 
     # sanity check for generation of particle within the cone (require to be compatibe with NPART==1, gunType==Pt and supported particles)
@@ -295,9 +297,10 @@ process.mix.maxBunch = cms.int32(3)
     for particle in particles:
         nFilesPerJob = 0
         eventsPerPrevJob = 0
+        sParticle = [p.strip(" ") for p in particle.split(",")] # prepare a list of particle strings without white spaces
         # in case of 'RECO' or 'NTUP', get the input file list for given particle, determine number of jobs, get also basic GSD/RECO info
         if (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
-            inputFilesList = getInputFileList(DASquery,inPath, previousDataTier, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+particle+'_*.root')
+            inputFilesList = getInputFileList(DASquery,inPath, previousDataTier, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+"_id".join(sParticle)+'_*.root')
             if len(inputFilesList) == 0:
                 continue
             # build regular expression for splitting (NOTE: none of this is used for relval!)
@@ -323,7 +326,7 @@ process.mix.maxBunch = cms.int32(3)
             if DASquery:
                 basename=outDir+'_'+opt.DTIER+'_'+str(job)
             else:
-                basename = commonFileNamePrefix + '_PDGid'+particle+'_x'+str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD'])+'_' + opt.gunType+str(opt.thresholdMin)+'To'+str(opt.thresholdMax)+'_'+opt.DTIER+'_'+str(job)
+                basename = commonFileNamePrefix + '_PDGid'+"_id".join(sParticle)+'_x'+str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD'])+'_' + opt.gunType+str(opt.thresholdMin)+'To'+str(opt.thresholdMax)+'_'+opt.DTIER+'_'+str(job)
 
             cfgfile = basename +'.py'
             outfile = basename +'.root'
@@ -374,6 +377,9 @@ process.mix.maxBunch = cms.int32(3)
                 else:
                     # otherwise put False
                     s_template=s_template.replace('DUMMYROR','False')
+
+            if (opt.DTIER == 'NTUP'):
+                s_template=s_template.replace('DUMMYRECLUST',str(opt.RECLUST))
 
             # submit job
             # now write the file from the s_template

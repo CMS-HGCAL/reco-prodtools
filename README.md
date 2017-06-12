@@ -9,12 +9,12 @@ Then anywhere,
 ```
 git clone git@github.com:CMS-HGCAL/reco-prodtools.git
 cd reco-prodtools
-python SubmitHGCalPGun.py --nevts 2 --evtsperjob 1 --queue 1nh --partID 13 --thresholdMin 35 --thresholdMin 35 --gunType E --tag test_${USER}
+python SubmitHGCalPGun.py --nevts 2 --evtsperjob 1 --queue 1nh --partID 13 --thresholdMin 35 --thresholdMax 35 --gunType E --tag test_${USER}
 ```
 
 ## details
 
-To produce `NEVENTS` GEN-SIM-DIGI events with `NPART` particles (per event) of type `PART_PDGID` and in the p_T range from `PTMIN` to `PTMAX`, one should run:
+To produce `NEVENTS` GEN-SIM-DIGI events with `NPART` sets of particles (per event) of type `PART_PDGID` and in the p_T range from `PTMIN` to `PTMAX`, one should run:
 ```
   python SubmitHGCalPGun.py
   --datTier GSD
@@ -29,6 +29,8 @@ To produce `NEVENTS` GEN-SIM-DIGI events with `NPART` particles (per event) of t
   [--local]
   --tag MYTAG
 ```
+Here, one can produce a custom set of particles by providing `PART_PDGID` as a set of comma-separated single PDG IDs.
+
 To produce `NEVENTS` GEN-SIM-DIGI events with pair of particles within given angular distance ΔR(η,φ) (per event), where the first particle is of type `PART_PDGID` and in the p_T range from `PTMIN` to `PTMAX`, and the second one is of type `INCONE_PART_PDGID` and at distance from `DRMIN` to `DRMAX` and with p_T in range from `PTRATIO_MIN` to `PTRATIO_MAX` relative to the first particle, one should run:
 ```
   python SubmitHGCalPGun.py
@@ -99,6 +101,7 @@ python SubmitHGCalPGun.py \
   --evtsperjob NPERJOB \
   --queue QUEUENAME \
   --inDir partGun_[MYTAG]_[DATE] \
+  [--noReClust] \
   [--local] \
   --tag MYTAG
 ```
