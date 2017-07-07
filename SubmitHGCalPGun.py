@@ -28,6 +28,7 @@ def parseOptions():
     parser.add_option('', '--nPart',  dest='NPART',  type=int,   default=1,      help='number of times particles of type(s) PARTID will be generated per event, default is 1')
     parser.add_option('', '--thresholdMin',  dest='thresholdMin',  type=float, default=1.0,     help='min. threshold value')
     parser.add_option('', '--thresholdMax',  dest='thresholdMax',  type=float, default=35.0,    help='max. threshold value')
+    parser.add_option('', '--gunMode',   dest='gunMode',   type='string', default='default',    help='default or pythia8')
     parser.add_option('', '--gunType',   dest='gunType',   type='string', default='Pt',    help='Pt or E gun')
     parser.add_option('', '--PU',   dest='PU',   type='string', default='0',    help='PU value (0 is the default)')
     parser.add_option('', '--PUDS',   dest='PUDS',   type='string', default='',    help='PU dataset')
@@ -59,6 +60,11 @@ def parseOptions():
         print 'ERROR: CMSSW does not seem to be set up. Exiting...'
         sys.exit()
 
+    partGunModes = ['default', 'pythia8']
+    if opt.gunMode not in partGunModes:
+        parser.error('Particle gun mode ' + opt.gunMode + ' is not supported. Exiting...')
+        sys.exit()
+
     partGunTypes = ['Pt', 'E']
     if opt.gunType not in partGunTypes:
         parser.error('Particle gun type ' + opt.gunType + ' is not supported. Exiting...')
@@ -80,7 +86,7 @@ def parseOptions():
 
     # list of supported particles, check if requested partID list is a subset of the list of the supported ones
     global particles
-    particles = ['22', '111', '211', '11', '13', '15', '12', '14', '16', '130']
+    particles = ['22', '111', '211', '11', '13', '15', '12', '14', '16', '130', '1', '2', '3', '4', '5']
     inPartID = [p.strip(" ") for p in opt.PARTID.split(",")] # prepare list of requested IDs (split by ",", strip white spaces)
     if not (set(inPartID) < set(particles) or opt.PARTID == ''):
         parser.error('Particle(s) with ID(s) ' + opt.PARTID + ' is not supported. Exiting...')
@@ -137,7 +143,7 @@ def printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
         curr_input= opt.RELVAL
     print 'PU:         ',opt.PU
     print 'PU dataset: ',opt.PUDS
-    print 'INPUTS:     ', [curr_input, 'Particle gun type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' times per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
+    print 'INPUTS:     ', [curr_input, 'Particle gun mode: ' + opt.gunMode + ', type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' times per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
     if (opt.InConeID!='' and opt.DTIER=='GSD'):
         print '             IN-CONE: PDG ID '+str(opt.InConeID)+', deltaR in ['+str(opt.MinDeltaR)+ ','+str(opt.MaxDeltaR)+']'+', momentum ratio in ['+str(opt.MinMomRatio)+ ','+str(opt.MaxMomRatio)+']'
     print 'STORE AREA: ', [opt.eosArea, currentDir][int(opt.LOCAL)]
@@ -183,6 +189,8 @@ def submitHGCalProduction():
     SCRAM_ARCH = os.getenv('SCRAM_ARCH')
     commonFileNamePrefix = 'partGun'
     partGunType = 'FlatRandom%sGunProducer' % opt.gunType
+    if opt.gunMode == 'pythia8':
+        partGunType = 'Pythia8%sGun' % opt.gunType
     if opt.InConeID != '':
         partGunType = 'MultiParticleInConeGunProducer'  # change part gun type if needed, keep opt.gunType unchanged (E or Pt) for the "primary particle"
 
@@ -361,6 +369,7 @@ process.mix.maxBunch = cms.int32(3)
                 s_template=s_template.replace('MAXTHRESHSTRING',"Max"+str(opt.gunType))
                 s_template=s_template.replace('MINTHRESHSTRING',"Min"+str(opt.gunType))
                 s_template=s_template.replace('DUMMYPU',str(mixing))
+                s_template=s_template.replace('GUNMODE',str(opt.gunMode))
 
 
             elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
