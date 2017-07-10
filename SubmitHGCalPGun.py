@@ -86,7 +86,7 @@ def parseOptions():
 
     # list of supported particles, check if requested partID list is a subset of the list of the supported ones
     global particles
-    particles = ['22', '111', '211', '11', '13', '15', '12', '14', '16', '130', '1', '2', '3', '4', '5']
+    particles = ['22', '111', '211', '11', '13', '15', '12', '14', '16', '130', '1', '2', '3', '4', '5', '22']
     inPartID = [p.strip(" ") for p in opt.PARTID.split(",")] # prepare list of requested IDs (split by ",", strip white spaces)
     if not (set(inPartID) < set(particles) or opt.PARTID == ''):
         parser.error('Particle(s) with ID(s) ' + opt.PARTID + ' is not supported. Exiting...')
