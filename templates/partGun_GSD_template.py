@@ -78,22 +78,42 @@ process.mix.digitizers = cms.PSet(process.theDigitizersValid)
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 
-process.generator = cms.EDProducer("GUNPRODUCERTYPE",
-    AddAntiParticle = cms.bool(True),
-    PGunParameters = cms.PSet(
-        MaxEta = cms.double(3.0),
-        MaxPhi = cms.double(3.14159265359),
-        MAXTHRESHSTRING = cms.double(DUMMYTHRESHMAX),
-        MinEta = cms.double(1.479),
-        MinPhi = cms.double(-3.14159265359),
-        MINTHRESHSTRING = cms.double(DUMMYTHRESHMIN),
-        #DUMMYINCONESECTION
-        PartID = cms.vint32(DUMMYIDs)
-    ),
-    Verbosity = cms.untracked.int32(0),
-    firstRun = cms.untracked.uint32(1),
-    psethack = cms.string('multiple particles predefined pT/E eta 1p479 to 3')
-)
+gunmode = 'GUNMODE'
+
+if gunmode == 'default':
+    process.generator = cms.EDProducer("GUNPRODUCERTYPE",
+        AddAntiParticle = cms.bool(True),
+        PGunParameters = cms.PSet(
+            MaxEta = cms.double(3.0),
+            MaxPhi = cms.double(3.14159265359),
+            MAXTHRESHSTRING = cms.double(DUMMYTHRESHMAX),
+            MinEta = cms.double(1.479),
+            MinPhi = cms.double(-3.14159265359),
+            MINTHRESHSTRING = cms.double(DUMMYTHRESHMIN),
+            #DUMMYINCONESECTION
+            PartID = cms.vint32(DUMMYIDs)
+        ),
+        Verbosity = cms.untracked.int32(0),
+        firstRun = cms.untracked.uint32(1),
+        psethack = cms.string('multiple particles predefined pT/E eta 1p479 to 3')
+    )
+elif gunmode == 'pythia8':
+    process.generator = cms.EDFilter("GUNPRODUCERTYPE",
+        maxEventsToPrint = cms.untracked.int32(1),
+        pythiaPylistVerbosity = cms.untracked.int32(1),
+        pythiaHepMCVerbosity = cms.untracked.bool(True),
+        PGunParameters = cms.PSet(
+          ParticleID = cms.vint32(DUMMYIDs),
+          AddAntiParticle = cms.bool(True),
+          MinPhi = cms.double(-3.14159265359),
+          MaxPhi = cms.double(3.14159265359),
+          MINTHRESHSTRING = cms.double(DUMMYTHRESHMIN),
+          MAXTHRESHSTRING = cms.double(DUMMYTHRESHMAX),
+          MinEta = cms.double(1.479),
+          MaxEta = cms.double(3.0)
+          ),
+        PythiaParameters = cms.PSet(parameterSets = cms.vstring())
+    )
 
 # Path and EndPath definitions
 process.generation_step = cms.Path(process.pgen)

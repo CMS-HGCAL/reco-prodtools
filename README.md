@@ -26,10 +26,11 @@ To produce `NEVENTS` GEN-SIM-DIGI events with `NPART` sets of particles (per eve
   --thresholdMin PTMIN
   --thresholdMax PTMAX
   --gunType GUNTYPE
+  [--gunMode GUNMODE]
   [--local]
   --tag MYTAG
 ```
-Here, one can produce a custom set of particles by providing `PART_PDGID` as a set of comma-separated single PDG IDs.
+Here, one can produce a custom set of particles by providing `PART_PDGID` as a set of comma-separated single PDG IDs. To simulate the decay of unstable particles, e.g. quarks, gluons or taus,  an alternative particle gun based on PYTHIA8 can be used by setting `--gunMode pythia8`. 
 
 To produce `NEVENTS` GEN-SIM-DIGI events with pair of particles within given angular distance ΔR(η,φ) (per event), where the first particle is of type `PART_PDGID` and in the p_T range from `PTMIN` to `PTMAX`, and the second one is of type `INCONE_PART_PDGID` and at distance from `DRMIN` to `DRMAX` and with p_T in range from `PTRATIO_MIN` to `PTRATIO_MAX` relative to the first particle, one should run:
 ```
@@ -43,6 +44,7 @@ To produce `NEVENTS` GEN-SIM-DIGI events with pair of particles within given ang
   --thresholdMin PTMIN
   --thresholdMax PTMAX
   --gunType Pt
+  [--gunMode GUNMODE]
   --InConeID INCONE_PART_PDGID
   --MinDeltaR DRMIN
   --MaxDeltaR DRMAX
@@ -51,7 +53,7 @@ To produce `NEVENTS` GEN-SIM-DIGI events with pair of particles within given ang
   [--local]
   --tag MYTAG
 ```
-One should also note that for the genertion of pairs of particles within a given cone, one has to use the "Pt" gun.
+One should also note that for the genertion of pairs of particles within a given cone, one has to use the "Pt" gun. Also note that it is currently not possible to generate pairs within a cone using the PYTHIA8-based gun.
 
 The script will create a directory called `partGun_[MYTAG]_[DATE]` locally or on the CMG EOS area (see options), and submit jobs to queue `QUEUENAME` with `NPERJOB` events per job,
 `NEVENTS` in total.
