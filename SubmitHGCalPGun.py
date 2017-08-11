@@ -8,8 +8,7 @@ import time
 import math
 import re
 
-eosExec = '/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select'
-
+eosExec = 'eos'
 
 ### parsing input options
 def parseOptions():
@@ -28,6 +27,8 @@ def parseOptions():
     parser.add_option('', '--nPart',  dest='NPART',  type=int,   default=1,      help='number of times particles of type(s) PARTID will be generated per event, default is 1')
     parser.add_option('', '--thresholdMin',  dest='thresholdMin',  type=float, default=1.0,     help='min. threshold value')
     parser.add_option('', '--thresholdMax',  dest='thresholdMax',  type=float, default=35.0,    help='max. threshold value')
+    parser.add_option('', '--etaMin',  dest='etaMin',  type=float, default=1.479,  help='min. eta value')
+    parser.add_option('', '--etaMax',  dest='etaMax',  type=float, default=3.0,    help='max. eta value')
     parser.add_option('', '--gunMode',   dest='gunMode',   type='string', default='default',    help='default or pythia8')
     parser.add_option('', '--gunType',   dest='gunType',   type='string', default='Pt',    help='Pt or E gun')
     parser.add_option('', '--PU',   dest='PU',   type='string', default='0',    help='PU value (0 is the default)')
@@ -143,7 +144,7 @@ def printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
         curr_input= opt.RELVAL
     print 'PU:         ',opt.PU
     print 'PU dataset: ',opt.PUDS
-    print 'INPUTS:     ', [curr_input, 'Particle gun mode: ' + opt.gunMode + ', type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' times per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
+    print 'INPUTS:     ', [curr_input, 'Particle gun mode: ' + opt.gunMode + ', type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' times per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+'], eta threshold in ['+str(opt.etaMin)+','+str(opt.etaMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
     if (opt.InConeID!='' and opt.DTIER=='GSD'):
         print '             IN-CONE: PDG ID '+str(opt.InConeID)+', deltaR in ['+str(opt.MinDeltaR)+ ','+str(opt.MaxDeltaR)+']'+', momentum ratio in ['+str(opt.MinMomRatio)+ ','+str(opt.MaxMomRatio)+']'
     print 'STORE AREA: ', [opt.eosArea, currentDir][int(opt.LOCAL)]
@@ -365,6 +366,8 @@ process.mix.maxBunch = cms.int32(3)
                 s_template=s_template.replace('DUMMYIDs',nParticles)
                 s_template=s_template.replace('DUMMYTHRESHMIN',str(opt.thresholdMin))
                 s_template=s_template.replace('DUMMYTHRESHMAX',str(opt.thresholdMax))
+                s_template=s_template.replace('DUMMYETAMIN',str(opt.etaMin))
+                s_template=s_template.replace('DUMMYETAMAX',str(opt.etaMax))
                 s_template=s_template.replace('GUNPRODUCERTYPE',str(partGunType))
                 s_template=s_template.replace('MAXTHRESHSTRING',"Max"+str(opt.gunType))
                 s_template=s_template.replace('MINTHRESHSTRING',"Min"+str(opt.gunType))
