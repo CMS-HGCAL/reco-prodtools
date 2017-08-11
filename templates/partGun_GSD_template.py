@@ -7,7 +7,7 @@ import FWCore.ParameterSet.Config as cms
 
 from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process('HLT',eras.Phase2C2)
+process = cms.Process('HLT',eras.Phase2)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -84,10 +84,10 @@ if gunmode == 'default':
     process.generator = cms.EDProducer("GUNPRODUCERTYPE",
         AddAntiParticle = cms.bool(True),
         PGunParameters = cms.PSet(
-            MaxEta = cms.double(3.0),
+            MaxEta = cms.double(DUMMYETAMAX),
             MaxPhi = cms.double(3.14159265359),
             MAXTHRESHSTRING = cms.double(DUMMYTHRESHMAX),
-            MinEta = cms.double(1.479),
+            MinEta = cms.double(DUMMYETAMIN),
             MinPhi = cms.double(-3.14159265359),
             MINTHRESHSTRING = cms.double(DUMMYTHRESHMIN),
             #DUMMYINCONESECTION
