@@ -66,7 +66,7 @@ Rule of thumb for GEN-SIM-DIGI: 4 events per `1nh`:
  
 ## Include PU at the GSD level
 Add options --PU NPUevents --PUDS MinBias_dataset. Remember to 'voms-proxy-init' before so to let the script use das-client. 
-Example of MinBias dataset to use: [/MinBias_TuneCUETP8M1_14TeV-pythia8/PhaseIITDRSpring17GS-91X_upgrade2023_realistic_v2-v1/GEN-SIM](https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=%2FMinBias_TuneCUETP8M1_14TeV-pythia8%2FPhaseIITDRSpring17GS-91X_upgrade2023_realistic_v2-v1%2FGEN-SIM)
+Example of MinBias dataset to use: [/MinBias_TuneCUETP8M1_14TeV-v1-pythia8/PhaseIITDRFall17GS-93X_upgrade2023_realistic_v2-v1/GEN-SIM](https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=%2FMinBias_TuneCUETP8M1_14TeV-v1-pythia8%2FPhaseIITDRFall17GS-93X_upgrade2023_realistic_v2-v1%2FGEN-SIM)
 
 
 ## RECO step
