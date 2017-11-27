@@ -47,6 +47,7 @@ def parseOptions():
     parser.add_option('', '--noReClust',  action='store_false', dest='RECLUST',  default=True, help='do not re-run RECO-level clustering at NTUP step, default is True (do re-run the clustering).')
     parser.add_option('', '--addGenOrigin',    action='store_true', dest='ADDGENORIG',  default=False, help='add coordinates of the origin vertex for gen particles as well as the mother particle index')
     parser.add_option('', '--addGenExtrapol',  action='store_true', dest='ADDGENEXTR',  default=False, help='add coordinates for the position of each gen particle extrapolated to the first HGCal layer (takes into account magnetic field)')
+    parser.add_option('', '--storePFCandidates',  action='store_true', dest='storePFCandidates',  default=False, help='store PFCandidates collection')
 
     # store options and arguments as global variables
     global opt, args
@@ -384,13 +385,14 @@ process.mix.maxBunch = cms.int32(3)
                 inputFiles = '"' + '", "'.join([recoInputPrefix+str(f) for f in inputFilesListPerJob]) + '"'
                 s_template=s_template.replace('DUMMYINPUTFILELIST',inputFiles)
                 s_template=s_template.replace('DUMMYEVTSPERJOB',str(-1))
-                
+
 
 
             if (opt.DTIER == 'NTUP'):
                 s_template=s_template.replace('DUMMYRECLUST',str(opt.RECLUST))
                 s_template=s_template.replace('DUMMYSGO',str(opt.ADDGENORIG))
                 s_template=s_template.replace('DUMMYSGE',str(opt.ADDGENEXTR))
+                s_template=s_template.replace('DUMMYSPFC',str(opt.storePFCandidates))
 
             # submit job
             # now write the file from the s_template
