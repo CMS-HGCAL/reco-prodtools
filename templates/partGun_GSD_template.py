@@ -9,6 +9,21 @@ from Configuration.StandardSequences.Eras import eras
 
 process = cms.Process('HLT',eras.Phase2)
 
+from SimCalorimetry.HGCalSimProducers.hgcalDigitizer_cfi import hgchefrontDigitizer
+hgchefrontDigitizer.tofDelay = cms.double(5.)
+hgchefrontDigitizer.digiCfg.feCfg.jitterNoise_ns = cms.vdouble(25., 25., 25.)
+hgchefrontDigitizer.digiCfg.feCfg.jitterConstant_ns = cms.vdouble(0.0004, 0.0004, 0.0004)
+hgchefrontDigitizer.digiCfg.feCfg.tdcForToAOnset_fC = cms.vdouble(12, 12, 12)
+hgchefrontDigitizer.digiCfg.feCfg.toaLSB_ns = cms.double(0.0244)
+
+from SimCalorimetry.HGCalSimProducers.hgcalDigitizer_cfi import hgceeDigitizer
+hgceeDigitizer.tofDelay = cms.double(5.)
+hgceeDigitizer.digiCfg.feCfg.jitterNoise_ns = cms.vdouble(25., 25., 25.)
+hgceeDigitizer.digiCfg.feCfg.jitterConstant_ns = cms.vdouble(0.0004, 0.0004, 0.0004)
+hgceeDigitizer.digiCfg.feCfg.tdcForToAOnset_fC = cms.vdouble(12, 12, 12)
+hgceeDigitizer.digiCfg.feCfg.toaLSB_ns = cms.double(0.0244)
+
+
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
