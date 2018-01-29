@@ -169,7 +169,7 @@ def getInputFileList(DASquery,inPath, inSubDir, local, pattern):
         # DASquery will be made based on inPath (i.e. opt.RELVAL)
 
         relvalname=inPath.split('/')[1]
-        cmd='das_client --limit 10000 --query="file dataset='+inPath+'" | grep '+relvalname
+        cmd='dasgoclient -limit 10000 -query="file dataset='+inPath+'" | grep '+relvalname
         status, thisoutput = commands.getstatusoutput(cmd)
         if status !=0:
             print "Error in processing command: "+cmd
@@ -207,8 +207,8 @@ def submitHGCalProduction():
     if int(opt.PU) != 0:
         # we need to get the PU dataset
         puname=str(opt.PUDS).split('/')[1]
-        # PLEASE NOTE --> using only 20 MinBias files here!! change to to 10000 if you want them all
-        cmd='das_client --limit 20 --query="file dataset='+str(opt.PUDS)+'" | grep '+puname
+        # PLEASE NOTE --> using only 50 MinBias files here!! change to to 10000 if you want them all
+        cmd='dasgoclient -limit 50 -query="file dataset='+str(opt.PUDS)+'" | grep '+puname
         status, thisoutput = commands.getstatusoutput(cmd)
         if status !=0:
             print "Error in processing command: "+cmd
