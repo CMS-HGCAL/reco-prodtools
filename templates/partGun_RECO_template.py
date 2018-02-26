@@ -9,6 +9,13 @@ from Configuration.StandardSequences.Eras import eras
 
 process = cms.Process('RECO',eras.Phase2)
 
+from SimCalorimetry.HGCalSimProducers.hgcalDigitizer_cfi import hgchefrontDigitizer
+hgchefrontDigitizer.digiCfg.feCfg.toaLSB_ns = cms.double(0.0244)
+
+from SimCalorimetry.HGCalSimProducers.hgcalDigitizer_cfi import hgceeDigitizer
+hgceeDigitizer.digiCfg.feCfg.toaLSB_ns = cms.double(0.0244)
+
+
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
