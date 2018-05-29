@@ -7,6 +7,7 @@ process.maxEvents.input = cms.untracked.int32(DUMMYEVTSPERJOB)
 # random seeds
 process.RandomNumberGeneratorService.generator.initialSeed = cms.untracked.uint32(DUMMYSEED)
 process.RandomNumberGeneratorService.VtxSmeared.initialSeed = cms.untracked.uint32(DUMMYSEED)
+process.RandomNumberGeneratorService.mix.initialSeed = cms.untracked.uint32(DUMMYSEED)
 
 # Input source
 process.source.firstLuminosityBlock = cms.untracked.uint32(DUMMYSEED)
