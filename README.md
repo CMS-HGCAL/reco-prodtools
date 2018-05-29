@@ -7,10 +7,28 @@ Set up CMSSW according to https://github.com/CMS-HGCAL/reco-ntuples
 
 Then anywhere,
 ```
-git clone git@github.com:CMS-HGCAL/reco-prodtools.git
-cd reco-prodtools
+git clone git@github.com:CMS-HGCAL/reco-prodtools.git reco_prodtools
+cd reco_prodtools/templates/python
+./produceSkeletons_D17_NoSmear_NoPU.sh
+cd ../../..
+scram b
 python SubmitHGCalPGun.py --nevts 2 --evtsperjob 1 --queue 1nh --partID 13 --thresholdMin 35 --thresholdMax 35 --gunType E --tag test_${USER}
 ```
+
+Mind that the directory `reco_prodtools` needs to have the underscore (instead of a hyphen).
+
+## Available configurations
+
+For details on the geometry, please see https://github.com/cms-sw/cmssw/blob/master/Configuration/Geometry/README.md
+For details on the pileup scenario, please see https://github.com/cms-sw/cmssw/blob/master/Configuration/StandardSequences/python/Mixing.py
+
+| Snippet        | Era            | Geometry       | Beamspot       | PU             |
+| -------------- | -------------- | -------------- | -------------- | -------------- |
+| [produceSkeletons_D17_NoSmear_noPU.sh](templates/python/produceSkeletons_D17_NoSmear_noPU.sh) | Phase2_timing | D17 | NoSmear | none |
+| [produceSkeletons_D17_NoSmear_PU_AVE_200_BX_25ns.sh](templates/python/produceSkeletons_D17_NoSmear_PU_AVE_200_BX_25ns.sh) | Phase2_timing | D17 | NoSmear | AVE_200_BX_25ns |
+| [produceSkeletons_D23_VtxSmearedHLLHC_noPU.sh](templates/python/produceSkeletons_D23_VtxSmearedHLLHC_noPU.sh) | Phase2 | D23 | VtxSmearedHLLHC | none |
+
+Whenever you would like to change configuration, change to the `reco_prodtools/templates/python` directory and execute the corresponding script. Then make sure to run `scram b`.
 
 ## details
 
@@ -30,7 +48,7 @@ To produce `NEVENTS` GEN-SIM-DIGI events with `NPART` sets of particles (per eve
   [--local]
   --tag MYTAG
 ```
-Here, one can produce a custom set of particles by providing `PART_PDGID` as a set of comma-separated single PDG IDs. To simulate the decay of unstable particles, e.g. quarks, gluons or taus,  an alternative particle gun based on PYTHIA8 can be used by setting `--gunMode pythia8`. 
+Here, one can produce a custom set of particles by providing `PART_PDGID` as a set of comma-separated single PDG IDs. To simulate the decay of unstable particles, e.g. quarks, gluons or taus,  an alternative particle gun based on PYTHIA8 can be used by setting `--gunMode pythia8`.
 
 To produce `NEVENTS` GEN-SIM-DIGI events with pair of particles within given angular distance ΔR(η,φ) (per event), where the first particle is of type `PART_PDGID` and in the p_T range from `PTMIN` to `PTMAX`, and the second one is of type `INCONE_PART_PDGID` and at distance from `DRMIN` to `DRMAX` and with p_T in range from `PTRATIO_MIN` to `PTRATIO_MAX` relative to the first particle, one should run:
 ```
@@ -63,10 +81,6 @@ are stored locally `in partGun_[MYTAG]_[DATE]`, while the resulting files `partG
 Rule of thumb for GEN-SIM-DIGI: 4 events per `1nh`:
  * 20 events should be possible to finish in queue `8nh`.
  * Ditto, 100 events in `1nd`.
- 
-## Include PU at the GSD level
-Add options --PU NPUevents --PUDS MinBias_dataset. Remember to 'voms-proxy-init' before so to let the script use das-client. 
-Example of MinBias dataset to use: [/MinBias_TuneCUETP8M1_14TeV-v1-pythia8/PhaseIITDRFall17GS-93X_upgrade2023_realistic_v2-v1/GEN-SIM](https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=%2FMinBias_TuneCUETP8M1_14TeV-v1-pythia8%2FPhaseIITDRFall17GS-93X_upgrade2023_realistic_v2-v1%2FGEN-SIM)
 
 
 ## RECO step
@@ -107,6 +121,8 @@ python SubmitHGCalPGun.py \
   [--local] \
   --tag MYTAG
 ```
+
+
 ## RelVal
 
 It can also run directly on RelVal using the same NTUP cfg. It runs das_client internally so you need to have a valid proxy (i.e. run voms-proxy-init before). The output goes in an area (eos/local) named after the RelVal dataset with all '/' replaced by underscores.
@@ -129,7 +145,7 @@ We use the _fork and pull_ model:
 
 If you haven't done so yet, clone this repository:
 ```
-git clone git@github.com:CMS-HGCAL/reco-prodtools.git
+git clone git@github.com:CMS-HGCAL/reco-prodtools.git reco_prodtools
 ```
 Add your fork of the repository as remote:
 ```
