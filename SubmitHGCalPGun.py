@@ -31,8 +31,6 @@ def parseOptions():
     parser.add_option('', '--etaMax',  dest='etaMax',  type=float, default=3.0,    help='max. eta value')
     parser.add_option('', '--gunMode',   dest='gunMode',   type='string', default='default',    help='default or pythia8')
     parser.add_option('', '--gunType',   dest='gunType',   type='string', default='Pt',    help='Pt or E gun')
-    parser.add_option('', '--PU',   dest='PU',   type='string', default='0',    help='PU value (0 is the default)')
-    parser.add_option('', '--PUDS',   dest='PUDS',   type='string', default='',    help='PU dataset')
     parser.add_option('', '--InConeID', dest='InConeID',   type='string',     default='', help='PDG ID for single particle to be generated in the cone (supported as PARTID), default is empty string (none)')
     parser.add_option('', '--MinDeltaR',  dest='MinDeltaR',  type=float, default=0.3, help='min. DR value')
     parser.add_option('', '--MaxDeltaR',  dest='MaxDeltaR',  type=float, default=0.4, help='max. DR value')
@@ -112,14 +110,6 @@ def parseOptions():
     if opt.RELVAL != '':
         particles = ['dummy']
 
-    # sanity check on PU
-    if int(opt.PU) !=0:
-        if opt.DTIER != 'GSD':
-            parser.error('PU simulation not supported for ' + opt.DTIER + '. Exiting...')
-            sys.exit(1)
-        if opt.PUDS == '':
-            parser.error('PU simulation requested you need to specify a dataset (--PUDS). Exiting...')
-            sys.exit(1)
 
 ### processing the external os commands
 def processCmd(cmd, quite = 0):
@@ -145,8 +135,6 @@ def printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
         curr_input= opt.inDir
     else:
         curr_input= opt.RELVAL
-    print 'PU:         ',opt.PU
-    print 'PU dataset: ',opt.PUDS
     print 'INPUTS:     ', [curr_input, 'Particle gun mode: ' + opt.gunMode + ', type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' times per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+'], eta threshold in ['+str(opt.etaMin)+','+str(opt.etaMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
     if (opt.InConeID!='' and opt.DTIER=='GSD'):
         print '             IN-CONE: PDG ID '+str(opt.InConeID)+', deltaR in ['+str(opt.MinDeltaR)+ ','+str(opt.MaxDeltaR)+']'+', momentum ratio in ['+str(opt.MinMomRatio)+ ','+str(opt.MaxMomRatio)+']'
@@ -203,30 +191,6 @@ def submitHGCalProduction():
     if opt.RELVAL != '':
         DASquery=True
 
-    # in case of PU, GSD needs the MinBias
-    if int(opt.PU) != 0:
-        # we need to get the PU dataset
-        puname=str(opt.PUDS).split('/')[1]
-        # PLEASE NOTE --> using only 50 MinBias files here!! change to to 10000 if you want them all
-        cmd='dasgoclient -limit 50 -query="file dataset='+str(opt.PUDS)+'" | grep '+puname
-        status, thisoutput = commands.getstatusoutput(cmd)
-        if status !=0:
-            print "Error in processing command: "+cmd
-            print "Did you forget running voms-proxy-init?"
-            sys.exit(1)
-        PUList=thisoutput.split()
-        # define as well the template to be added
-        PUSECTION="""
-process.RandomNumberGeneratorService.mix.initialSeed = cms.untracked.uint32(PUSEED)
-process.mix.input.nbPileupEvents.averageNumber = cms.double(PUVALUE)
-process.mix.input.fileNames = cms.untracked.vstring(PUFILES)
-process.mix.bunchspace = cms.int32(25)
-process.mix.minBunch = cms.int32(-12)
-process.mix.maxBunch = cms.int32(3)
-        """
-        PUSECTION=PUSECTION.replace('PUVALUE',opt.PU)
-        PUSECTION=PUSECTION.replace('PUFILES',str(PUList))
-        # print PUSECTION
 
     # in case of InCone generation of particles
     if opt.InConeID != '':
@@ -349,15 +313,6 @@ process.mix.maxBunch = cms.int32(3)
             s_template=s_template.replace('DUMMYSEED',str(job))
 
             if (opt.DTIER == 'GSD'):
-                # first prepare replaces for PU
-                if int(opt.PU) == 0:
-                    # no PU
-                    mixing='mixNoPU_cfi'
-                else:
-                    mixing='mix_POISSON_average_cfi'
-                    s_template=s_template.replace('#DUMMYPUSECTION',PUSECTION)
-                    s_template=s_template.replace('PUSEED',str(job))
-
                 # in case of InCone generation of particles
                 if opt.InConeID != '':
                     s_template=s_template.replace('#DUMMYINCONESECTION',InConeSECTION)
@@ -374,7 +329,6 @@ process.mix.maxBunch = cms.int32(3)
                 s_template=s_template.replace('GUNPRODUCERTYPE',str(partGunType))
                 s_template=s_template.replace('MAXTHRESHSTRING',"Max"+str(opt.gunType))
                 s_template=s_template.replace('MINTHRESHSTRING',"Min"+str(opt.gunType))
-                s_template=s_template.replace('DUMMYPU',str(mixing))
                 s_template=s_template.replace('GUNMODE',str(opt.gunMode))
 
 

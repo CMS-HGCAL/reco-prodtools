@@ -1,37 +1,15 @@
 import FWCore.ParameterSet.Config as cms
-from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process("Demo")
-process.load('Configuration.StandardSequences.Services_cff')
-process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
-process.load('Configuration.Geometry.GeometryExtended2023D17Reco_cff')
-process.load('Configuration.StandardSequences.MagneticField_cff')
-process.load('Configuration.EventContent.EventContent_cff')
-process.load("FWCore.MessageService.MessageLogger_cfi")
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-process.load('RecoLocalCalo.HGCalRecProducers.HGCalLocalRecoSequence_cff')
-#process.load("RecoLocalCalo.HGCalRecProducers.hgcalLayerClusters_cfi")
+from reco_prodtools.templates.NTUP_fragment import process
 
-from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
+process.maxEvents.input = cms.untracked.int32(DUMMYEVTSPERJOB)
+
+process.source.fileNames = cms.untracked.vstring(
+       DUMMYINPUTFILELIST
+    )
 
 from FastSimulation.Event.ParticleFilter_cfi import *
 from RecoLocalCalo.HGCalRecProducers.HGCalRecHit_cfi import dEdX_weights as dEdX
-
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(DUMMYEVTSPERJOB) )
-
-process.source = cms.Source("PoolSource",
-    # replace 'myfile.root' with the source file you want to use
-    fileNames = cms.untracked.vstring(
-        DUMMYINPUTFILELIST
-    ),
-    duplicateCheckMode = cms.untracked.string("noDuplicateCheck")
-    # inputCommands=cms.untracked.vstring(
-    #     'keep *',
-    #     'drop EcalEBTriggerPrimitiveDigisSorted_simEcalEBTriggerPrimitiveDigis__HLT'
-    # )
-)
-
 process.ana = cms.EDAnalyzer('HGCalAnalysis',
                              detector = cms.string("all"),
                              rawRecHits = cms.bool(True),
@@ -60,6 +38,10 @@ process.TFileService = cms.Service("TFileService",
 
 reRunClustering = DUMMYRECLUST
 
+# Remove all registered paths and the schedule, so that only our ntuplizer paths will be executed
+for p in process.paths: delattr(process,p)
+delattr(process,'schedule')
+
 if reRunClustering:
     # process.hgcalLayerClusters.minClusters = cms.uint32(0)
     # process.hgcalLayerClusters.realSpaceCone = cms.bool(True)
@@ -71,3 +53,5 @@ if reRunClustering:
     process.p = cms.Path(process.hgcalLayerClusters+process.ana)
 else:
     process.p = cms.Path(process.ana)
+
+process.schedule = cms.Schedule(process.p)
