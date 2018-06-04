@@ -13,7 +13,7 @@ from RecoLocalCalo.HGCalRecProducers.HGCalRecHit_cfi import dEdX_weights as dEdX
 process.ana = cms.EDAnalyzer('HGCalAnalysis',
                              detector = cms.string("all"),
                              rawRecHits = cms.bool(True),
-                             readCaloParticles = cms.bool(False),
+                             readCaloParticles = cms.bool(True),
                              readGenParticles = cms.bool(False),
                              storeGenParticleOrigin = cms.bool(DUMMYSGO),
                              storeGenParticleExtrapolation = cms.bool(DUMMYSGE),

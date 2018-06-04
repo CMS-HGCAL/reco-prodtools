@@ -6,13 +6,12 @@
 # below (EVTSRECO and EVTSNTUP).
 #
 
-eosExec='/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select'
 SAMPLEDIR='/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production'
 EVTSRECO=60
 EVTSNTUP=120
 
-for i in `$eosExec ls $SAMPLEDIR`; do
-    CONTENT=("${(@f)$($eosExec ls $SAMPLEDIR/$i)}")
+for i in `ls $SAMPLEDIR`; do
+    CONTENT=("${(@f)$(ls $SAMPLEDIR/$i)}")
     echo "$i has $CONTENT"
     if [[ ${CONTENT[(r)GSD]} == GSD ]]; then
         if [[ ${CONTENT[(r)RECO]} == RECO ]]; then
