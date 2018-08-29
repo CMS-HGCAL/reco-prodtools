@@ -29,7 +29,7 @@ cmsDriver.py SinglePiPt25Eta1p7_2p7_cfi  --conditions auto:phase2_realistic \
   -n 10 --era Phase2 --eventcontent FEVTDEBUGHLT --nThreads 4 \
   -s GEN,SIM,DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,HLT:@fake2 \
   --datatier GEN-SIM --beamspot HLLHC \
-  --geometry Extended2023D23 --era Phase2 \
+  --geometry Extended2023D23 \
   --no_exec --python_filename=GSD_fragment.py
 
 
