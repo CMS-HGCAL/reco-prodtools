@@ -23,7 +23,7 @@ def parseOptions():
     parser.add_option('-n', '--nevts',  dest='NEVTS',  type=int,       default=100,  help='total number of events, applicable to runs with GEN stage, default is 100')
     parser.add_option('-e', '--evtsperjob', dest='EVTSPERJOB', type=int, default=-1,   help='number of events per job, if set to -1 it will set to a recommended value (GSD: 4events/1nh, RECO:8events/1nh), default is -1')
     parser.add_option('-c', '--cfg',    dest='CONFIGFILE', type='string', default='',help='CMSSW config template name, if empty string the deafult one will be used')
-    parser.add_option('-p', '--partID', dest='PARTID', type='string',     default='', help='string of particle PDG IDs separated by comma, if empty string - run on all supported (11,12,13,14,15,16,22,111,211,130), default is empty string (all)')
+    parser.add_option('-p', '--partID', dest='PARTID', type='string',     default='', help='string of particle PDG IDs separated by comma, if empty string - run on all supported (11,12,13,14,15,16,22,111,211,130) and corresponding negative values, default is empty string (all)')
     parser.add_option('', '--nPart',  dest='NPART',  type=int,   default=1,      help='number of times particles of type(s) PARTID will be generated per event, default is 1')
     parser.add_option('', '--thresholdMin',  dest='thresholdMin',  type=float, default=1.0,     help='min. threshold value')
     parser.add_option('', '--thresholdMax',  dest='thresholdMax',  type=float, default=35.0,    help='max. threshold value')
@@ -88,7 +88,7 @@ def parseOptions():
 
     # list of supported particles, check if requested partID list is a subset of the list of the supported ones
     global particles
-    particles = ['22', '111', '211', '11', '13', '15', '12', '14', '16', '130', '1', '2', '3', '4', '5', '22']
+    particles = ['22', '111', '211', '-211', '11', '-11', '13', '-13', '15', '-15', '12', '14', '16', '130', '1', '-1', '2', '-2', '3', '-3', '4', '-4', '5', '-5']
     inPartID = [p.strip(" ") for p in opt.PARTID.split(",")] # prepare list of requested IDs (split by ",", strip white spaces)
     if not (set(inPartID) < set(particles) or opt.PARTID == ''):
         parser.error('Particle(s) with ID(s) ' + opt.PARTID + ' is not supported. Exiting...')
