@@ -119,10 +119,13 @@ python SubmitHGCalPGun.py \
   --evtsperjob NPERJOB \
   --queue QUEUENAME \
   --inDir partGun_[MYTAG]_[DATE] \
+  [--multiClusterTag hgcalLayerClusters] \
   [--noReClust] \
   [--local] \
   --tag MYTAG
 ```
+
+Mind that the `multiClusterTag` option needs to be provided for RECO files created before `CMSSW_10_3_X`.
 
 
 ## RelVal
