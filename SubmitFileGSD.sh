@@ -1,13 +1,18 @@
+#!/bin/bash
+export XRD_NETWORKSTACK=IPv4
+
 ## External vars
-curDir=${1}
-outDir=${2}
-cfgFile=${3}
-localFlag=${4}
-CMSSWVER=${5} # CMSSW_8_1_0_pre7
-CMSSWDIR=${6} # ${curDir}/../${CMSSWVER}
-CMSSWARCH=${7} # slc6_amd64_gcc530
-eosArea=${8}
-dataTier=${9}
+clusterid=${1}
+procid=${2}
+curDir=${3}
+outDir=${4}
+cfgFile=${5}
+localFlag=${6}
+CMSSWVER=${7} # CMSSW_8_1_0_pre7
+CMSSWDIR=${8} # ${curDir}/../${CMSSWVER}
+CMSSWARCH=${9} # slc6_amd64_gcc530
+eosArea=${10}
+dataTier=${11}
 
 ##Create Work Area
 export SCRAM_ARCH=${CMSSWARCH}
