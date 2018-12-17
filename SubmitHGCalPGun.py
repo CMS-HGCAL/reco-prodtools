@@ -361,7 +361,7 @@ def submitHGCalProduction():
             write_template.close()
 
             write_condorjob= open(outDir+'/jobs/'+jobfile, 'w')
-            write_condorjob.write('+JobFlavour = '+opt.QUEUE+' \n\n')
+            write_condorjob.write('+JobFlavour = "'+opt.QUEUE+'" \n\n')
             write_condorjob.write('executable  = '+currentDir+'/SubmitFileGSD.sh \n')
             write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+'\n')
             write_condorjob.write('output      = '+outDir+'/std/'+basename+'.out \n')
@@ -369,7 +369,7 @@ def submitHGCalProduction():
             write_condorjob.write('log         = '+outDir+'/std/'+basename+'_htc.log \n\n')
             write_condorjob.write('max_retries = 1\n')
             write_condorjob.write('queue \n')
-            write_condorjob.close()        
+            write_condorjob.close()
 
             cmd = 'condor_submit ' + currentDir+'/'+outDir+'/jobs/'+jobfile
 
