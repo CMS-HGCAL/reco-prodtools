@@ -19,7 +19,7 @@ def parseOptions():
 
     # input options
     parser.add_option('-t', '--tag',    dest='TAG',    type='string',  default='', help='tag to be appended to the resulting output dir, default is an empty string')
-    parser.add_option('-q', '--queue',  dest='QUEUE',  type='string',  default='1nd', help='queue to be used with LSF batch, default is 1nd')
+    parser.add_option('-q', '--queue',  dest='QUEUE',  type='string',  default='tomorrow', help='queue to be used with HTCondor, default is tomorrow')
     parser.add_option('-n', '--nevts',  dest='NEVTS',  type=int,       default=100,  help='total number of events, applicable to runs with GEN stage, default is 100')
     parser.add_option('-e', '--evtsperjob', dest='EVTSPERJOB', type=int, default=-1,   help='number of events per job, if set to -1 it will set to a recommended value (GSD: 4events/1nh, RECO:8events/1nh), default is -1')
     parser.add_option('-c', '--cfg',    dest='CONFIGFILE', type='string', default='',help='CMSSW config template name, if empty string the deafult one will be used')
@@ -79,7 +79,7 @@ def parseOptions():
 
     # supported queues with the recommended number of events per hour (e.g. ~4events/1nh for GSD, ~8events/1nh for RECO) + sanity check
     eventsPerHour = {'GSD':4, 'RECO':8, 'NTUP':100}
-    queues_evtsperjob = {'1nw':(7*24*eventsPerHour[opt.DTIER]), '2nd':(2*24*eventsPerHour[opt.DTIER]), '1nd':(1*24*eventsPerHour[opt.DTIER]), '8nh':(8*eventsPerHour[opt.DTIER]), '1nh':(1*eventsPerHour[opt.DTIER]), '8nm':(1)}
+    queues_evtsperjob = {'nextweek':(7*24*eventsPerHour[opt.DTIER]), 'testmatch':(2*24*eventsPerHour[opt.DTIER]), 'tomorrow':(1*24*eventsPerHour[opt.DTIER]), 'workday':(8*eventsPerHour[opt.DTIER]), 'longlunch':(1*eventsPerHour[opt.DTIER]), 'microcentury':(1*eventsPerHour[opt.DTIER]), 'espresso':(1)}
     if opt.QUEUE not in queues_evtsperjob.keys():
         parser.error('Queue ' + opt.QUEUE + ' is not supported. Exiting...')
         sys.exit()
@@ -114,7 +114,7 @@ def parseOptions():
 
 ### processing the external os commands
 def processCmd(cmd, quite = 0):
-    #    print cmd
+    #print cmd
     status, output = commands.getstatusoutput(cmd)
     if (status !=0 and not quite):
         print 'Error in processing command:\n   ['+cmd+']'
@@ -228,6 +228,7 @@ def submitHGCalProduction():
         if (not os.path.isdir(outDir)):
             processCmd('mkdir -p '+outDir+'/cfg/')
             processCmd('mkdir -p '+outDir+'/std/')
+            processCmd('mkdir -p '+outDir+'/jobs/')
         else:
             print 'Directory '+outDir+' already exists. Exiting...'
             sys.exit()
@@ -239,6 +240,7 @@ def submitHGCalProduction():
             outDir=opt.RELVAL.replace('/','_')
         processCmd('mkdir -p '+outDir+'/cfg/')
         processCmd('mkdir -p '+outDir+'/std/')
+        processCmd('mkdir -p '+outDir+'/jobs/')
 
 
   # prepare dir for GSD outputs locally or at EOS
@@ -307,6 +309,7 @@ def submitHGCalProduction():
 
             cfgfile = basename +'.py'
             outfile = basename +'.root'
+            jobfile = basename +'.sub'
 
             s_template=template
 
@@ -357,8 +360,18 @@ def submitHGCalProduction():
             write_template.write(s_template)
             write_template.close()
 
+            write_condorjob= open(outDir+'/jobs/'+jobfile, 'w')
+            write_condorjob.write('+JobFlavour = '+opt.QUEUE+' \n\n')
+            write_condorjob.write('executable  = '+currentDir+'/SubmitFileGSD.sh \n')
+            write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+'\n')
+            write_condorjob.write('output      = '+outDir+'/std/'+basename+'.out \n')
+            write_condorjob.write('error       = '+outDir+'/std/'+basename+'.err \n')
+            write_condorjob.write('log         = '+outDir+'/std/'+basename+'_htc.log \n\n')
+            write_condorjob.write('max_retries = 1\n')
+            write_condorjob.write('queue \n')
+            write_condorjob.close()        
 
-            cmd = 'bsub -o '+outDir+'/std/'+basename +'.out -e '+outDir+'/std/'+basename +'.err -q '+opt.QUEUE+' -J '+basename+' "SubmitFileGSD.sh '+currentDir+' '+outDir+' '+cfgfile+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+'"'
+            cmd = 'condor_submit ' + currentDir+'/'+outDir+'/jobs/'+jobfile
 
             #TODO This could probably be better handled by a job array
             #Example: bsub -J "foo[1-3]" -oo "foo.%I.out" -eo "foo.%I.err" -q 8nm "sleep 1"
