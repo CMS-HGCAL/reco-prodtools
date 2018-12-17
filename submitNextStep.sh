@@ -19,11 +19,11 @@ for i in `ls $SAMPLEDIR`; do
                 echo "Nothing to be done"
             else
                 echo "submit NTUP for $i"
-                python SubmitHGCalPGun.py --datTier NTUP --evtsperjob $EVTSNTUP --queue 8nh --inDir $i
+                python SubmitHGCalPGun.py --datTier NTUP --evtsperjob $EVTSNTUP --queue workday --inDir $i
             fi
         else
             echo "submit RECO for $i"
-            python SubmitHGCalPGun.py --datTier RECO --evtsperjob $EVTSRECO --queue 8nh --inDir $i
+            python SubmitHGCalPGun.py --datTier RECO --evtsperjob $EVTSRECO --queue workday --inDir $i
         fi
     else
         echo "$i does not seem to be a directory containing event samples! Skipping."
