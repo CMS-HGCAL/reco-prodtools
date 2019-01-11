@@ -9,6 +9,7 @@ process.source.fileNames = cms.untracked.vstring(DUMMYINPUTFILELIST)
 
 # Output definition
 process.FEVTDEBUGHLToutput.fileName = cms.untracked.string('file:DUMMYFILENAME')
+process.DQMoutput.fileName = cms.untracked.string('file:DUMMYDQMFILENAME')
 
 # Customisation from command line
 # process.hgcalLayerClusters.minClusters = cms.uint32(3)

@@ -47,6 +47,8 @@ def parseOptions():
     parser.add_option('', '--addGenExtrapol',  action='store_true', dest='ADDGENEXTR',  default=False, help='add coordinates for the position of each gen particle extrapolated to the first HGCal layer (takes into account magnetic field)')
     parser.add_option('', '--storePFCandidates',  action='store_true', dest='storePFCandidates',  default=False, help='store PFCandidates collection')
     parser.add_option('', '--multiClusterTag',  action='store', dest='MULTICLUSTAG', default="hgcalMultiClusters", help='name of HGCalMultiCluster InputTag - use hgcalLayerClusters before CMSSW_10_3_X')
+    parser.add_option('', '--keepDQMfile',  action='store_true', dest='DQM',  default=False, help='store the DQM file in relevant folder locally or in EOS, default is False.')
+
 
     # store options and arguments as global variables
     global opt, args
@@ -247,9 +249,11 @@ def submitHGCalProduction():
     if (opt.LOCAL):
         processCmd('mkdir -p '+outDir+'/'+opt.DTIER+'/')
         recoInputPrefix = 'file:'+currentDir+'/'+outDir+'/'+previousDataTier+'/'
+        if (opt.DQM): processCmd('mkdir -p '+outDir+'/DQM/')
     else:
         processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/'+opt.DTIER+'/');
         recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+outDir+'/'+previousDataTier+'/'
+        if (opt.DQM): processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/DQM/'); 
     # in case of relval always take reconInput from /store...
     if DASquery: recoInputPrefix=''
 
@@ -309,11 +313,13 @@ def submitHGCalProduction():
 
             cfgfile = basename +'.py'
             outfile = basename +'.root'
+            outdqmfile = basename.replace(opt.DTIER, 'DQM') +'.root'
             jobfile = basename +'.sub'
 
             s_template=template
 
             s_template=s_template.replace('DUMMYFILENAME',outfile)
+            s_template=s_template.replace('DUMMYDQMFILENAME',outdqmfile)
             s_template=s_template.replace('DUMMYSEED',str(job))
 
             if (opt.DTIER == 'GSD'):
@@ -363,7 +369,7 @@ def submitHGCalProduction():
             write_condorjob= open(outDir+'/jobs/'+jobfile, 'w')
             write_condorjob.write('+JobFlavour = "'+opt.QUEUE+'" \n\n')
             write_condorjob.write('executable  = '+currentDir+'/SubmitFileGSD.sh \n')
-            write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+'\n')
+            write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
             write_condorjob.write('output      = '+outDir+'/std/'+basename+'.out \n')
             write_condorjob.write('error       = '+outDir+'/std/'+basename+'.err \n')
             write_condorjob.write('log         = '+outDir+'/std/'+basename+'_htc.log \n\n')
