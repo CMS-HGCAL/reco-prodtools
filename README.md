@@ -96,7 +96,7 @@ python SubmitHGCalPGun.py \
   --inDir partGun_[MYTAG]_[DATE] \
   [--local] \
   --tag MYTAG \
-  [--keepDQMfile] 
+  --keepDQMfile 
 ```
 
 The script will get the list of GEN-SIM-DIGI files from the directory `partGun_[MYTAG]_[DATE]`/`GSD` (locally or on the CMG EOS area), and submit jobs to queue `QUEUENAME` (if possbile with `NPERJOB` events per job).
