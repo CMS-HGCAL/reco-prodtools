@@ -13,6 +13,7 @@ CMSSWDIR=${8} # ${curDir}/../${CMSSWVER}
 CMSSWARCH=${9} # slc6_amd64_gcc530
 eosArea=${10}
 dataTier=${11}
+keepDQMfile=${12}
 
 ##Create Work Area
 export SCRAM_ARCH=${CMSSWARCH}
@@ -34,6 +35,14 @@ cmsRun ${curDir}/${outDir}/cfg/${cfgFile}
 if [ ${localFlag} == "True" ]
   then
     cp *${dataTier}*.root ${curDir}/${outDir}/${dataTier}/
+    if [ ${keepDQMfile} == "True" ]
+	then
+	cp *DQM*.root ${curDir}/${outDir}/DQM/
+    fi
   else
     xrdcp -N -v *${dataTier}*.root root://eoscms.cern.ch/${eosArea}/${outDir}/${dataTier}/
+    if [ ${keepDQMfile} == "True" ]
+	then
+	xrdcp -N -v *DQM*.root root://eoscms.cern.ch/${eosArea}/${outDir}/DQM/
+    fi	
 fi
