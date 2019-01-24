@@ -141,6 +141,9 @@ python SubmitHGCalPGun.py \
   -r /RelValSingleMu..etc.
 ```
 
+# Notes
+
+Starting from `CMSSW_10_4_0_pre3` (cms-sw/cmssw#25208), the handling of the calibration weights has been rewritten to be more generic and play nicely with eras. PR #54 took care of these changes.
 
 # to contribute
 
