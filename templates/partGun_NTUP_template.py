@@ -9,7 +9,8 @@ process.source.fileNames = cms.untracked.vstring(
     )
 
 from FastSimulation.Event.ParticleFilter_cfi import *
-from RecoLocalCalo.HGCalRecProducers.HGCalRecHit_cfi import dEdX
+#from RecoLocalCalo.HGCalRecProducers.HGCalRecHit_cfi import dEdX
+from RecoLocalCalo.HGCalRecProducers.HGCalRecHit_cfi import dEdX_weights as dEdX
 process.ana = cms.EDAnalyzer('HGCalAnalysis',
                              detector = cms.string("all"),
                              inputTag_HGCalMultiCluster = cms.string("DUMMYMULCLUSTAG"),
