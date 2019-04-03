@@ -53,3 +53,26 @@ elif gunmode == 'pythia8':
           ),
         PythiaParameters = cms.PSet(parameterSets = cms.vstring())
     )
+elif gunmode == 'closeby':
+    process.generator = cms.EDProducer("GUNPRODUCERTYPE",
+        AddAntiParticle = cms.bool(False),
+        PGunParameters = cms.PSet(
+            PartID = cms.vint32(DUMMYIDs),
+            EnMin = cms.double(DUMMYTHRESHMIN),
+            EnMax = cms.double(DUMMYTHRESHMAX),
+            RMin = cms.double(DUMMYRMIN),
+            RMax = cms.double(DUMMYRMAX),
+            ZMin = cms.double(DUMMYZMIN),
+            ZMax = cms.double(DUMMYZMAX),
+            Delta = cms.double(DUMMYDELTA),
+            Pointing = cms.bool(True),
+            Overlapping = cms.bool(False),
+            MaxEta = cms.double(DUMMYETAMAX),
+            MinEta = cms.double(DUMMYETAMIN),
+            MaxPhi = cms.double(3.14159265359/6.),
+            MinPhi = cms.double(-3.14159265359/6.)            
+        ),
+        Verbosity = cms.untracked.int32(10),
+        psethack = cms.string('single or multiple particles predefined E moving vertex'),
+        firstRun = cms.untracked.uint32(1)
+    )
