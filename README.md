@@ -79,8 +79,7 @@ Another gun that could be used is `--gunMode closeby`, which is capable of creat
 With this choice particles can be produced with random energy, R and Z in a specified range. When more than 
 one particle are asked to be produced, then each particle will be created at a different vertex, 
 equally spaced by Delta, the arc-distance between two consecutive vertices 
-over the circle of radius R. Also, there is the `--pointing` option which if used will point the particles to (0,0,0) otherwise the 
-particles will be produced parallel to the beamline. Furthermore, there is the `--overlapping` option that if used then
+over the circle of radius R. Also, there is the `--pointing` option which if used particles will be produced parallel to the beamline,  otherwise they will be pointing to (0,0,0). Furthermore, there is the `--overlapping` option that if used then
 particles will be generated in a window [phiMin,phiMax], [rMin,rMax], otherwise with a DeltaPhi=Delta/R. 
 Apart from producing multiple particles, this gun could also produce a single particle wherever the user wishes, having always the 
 nice feature of assigning to the vertex the time required to travel from (0,0,0) to the desired location. This could be 
@@ -89,7 +88,7 @@ adding the antiparticle.
 Since the gun is based on CMSSW pull requests [#26065](https://github.com/cms-sw/cmssw/pull/26065) and [#26277](https://github.com/cms-sw/cmssw/pull/26277), a CMSSW release after CMSSW_10_6_X_2019-04-02-2300
 should be used. 
 As an example, the command below will produce `NEVENTS` GEN-SIM-DIGI events with `NPART` sets of particles (per event) of type `PART_PDGID` 
-in the energy range from `EMIN` to `EMAX` (Pt option not available), radius range from `RMIN` to `RMAX`, z position from `ZMIN` to `ZMAX`, pointing to (0,0,0), with a distance between the particles vertices of deltaPhi = DELTA/R. 
+in the energy range from `EMIN` to `EMAX` (Pt option not available), radius range from `RMIN` to `RMAX`, z position from `ZMIN` to `ZMAX`, parallel to the beamline, with a distance between the particles vertices of deltaPhi = DELTA/R. 
 
 ```
   python SubmitHGCalPGun.py
