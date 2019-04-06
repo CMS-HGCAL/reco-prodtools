@@ -75,6 +75,45 @@ To produce `NEVENTS` GEN-SIM-DIGI events with pair of particles within given ang
 ```
 One should also note that for the genertion of pairs of particles within a given cone, one has to use the "Pt" gun. Also note that it is currently not possible to generate pairs within a cone using the PYTHIA8-based gun.
 
+Another gun that could be used is `--gunMode closeby`, which is capable of creating several vertices. 
+With this choice particles can be produced with random energy, R and Z in a specified range. When more than 
+one particle are asked to be produced, then each particle will be created at a different vertex, 
+equally spaced by Delta, the arc-distance between two consecutive vertices 
+over the circle of radius R. Also, there is the `--pointing` option which if used will point the particles to (0,0,0) otherwise the 
+particles will be produced parallel to the beamline. Furthermore, there is the `--overlapping` option that if used then
+particles will be generated in a window [phiMin,phiMax], [rMin,rMax], otherwise with a DeltaPhi=Delta/R. 
+Apart from producing multiple particles, this gun could also produce a single particle wherever the user wishes, having always the 
+nice feature of assigning to the vertex the time required to travel from (0,0,0) to the desired location. This could be 
+useful e.g. when someone wants to shoot straight to the scintillator part. Keep in mind that there is no sense of 
+adding the antiparticle. 
+Since the gun is based on CMSSW pull requests [#26065](https://github.com/cms-sw/cmssw/pull/26065) and [#26277](https://github.com/cms-sw/cmssw/pull/26277), a CMSSW release after CMSSW_10_6_X_2019-04-02-2300
+should be used. 
+As an example, the command below will produce `NEVENTS` GEN-SIM-DIGI events with `NPART` sets of particles (per event) of type `PART_PDGID` 
+in the energy range from `EMIN` to `EMAX` (Pt option not available), radius range from `RMIN` to `RMAX`, z position from `ZMIN` to `ZMAX`, pointing to (0,0,0), with a distance between the particles vertices of deltaPhi = DELTA/R. 
+
+```
+  python SubmitHGCalPGun.py
+  --datTier GSD
+  --nevts NEVENTS
+  --evtsperjob NPERJOB
+  --queue QUEUENAME
+  --partID PART_PDGID
+  --nPart NPART
+  --thresholdMin EMIN
+  --thresholdMax EMAX
+  --rMin RMIN
+  --rMax RMAX
+  --zMin ZMIN
+  --zMax ZMAX
+  --Delta DELTA
+  --pointing 	
+  --etaMin ETAMIN
+  --etaMax ETAMAX
+  --gunType E
+  --gunMode closeby
+  --tag MYTAG
+```
+
 The script will create a directory called `partGun_[MYTAG]_[DATE]` locally or on the CMG EOS area (see options), and submit jobs to queue `QUEUENAME` with `NPERJOB` events per job,
 `NEVENTS` in total.
 The batch `stdout`/`stderr` files and `.cfg` files used to run
