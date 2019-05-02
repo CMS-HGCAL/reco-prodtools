@@ -32,7 +32,7 @@ For details on the pileup scenario, please see https://github.com/cms-sw/cmssw/b
 
 Whenever you would like to change configuration, change to the `reco_prodtools/templates/python` directory and execute the corresponding script. Then make sure to run `scram b`.
 
-## details
+## Details
 
 To produce `NEVENTS` GEN-SIM-DIGI events with `NPART` sets of particles (per event) of type `PART_PDGID` and in the p_T range from `PTMIN` to `PTMAX`, one should run:
 ```
@@ -84,6 +84,43 @@ Rule of thumb for GEN-SIM-DIGI: 4 events per `1nh`:
  * 20 events should be possible to finish in queue `8nh`.
  * Ditto, 100 events in `1nd`.
 
+### Close-by gun
+
+Another gun that could be used is `--gunMode closeby`, which is capable of creating several vertices. Mind that it is only available in `CMSSW_10_6_0_pre4` or later.
+With this choice particles can be produced with random energy, R and Z in a specified range. When more than 
+one particle are asked to be produced, then each particle will be created at a different vertex, 
+equally spaced by Delta, the arc-distance between two consecutive vertices 
+over the circle of radius R. Also, there is the `--pointing` option which if used particles will be produced parallel to the beamline,  otherwise they will be pointing to (0,0,0). Furthermore, there is the `--overlapping` option that if used then
+particles will be generated in a window [phiMin,phiMax], [rMin,rMax], otherwise with a DeltaPhi=Delta/R. 
+Apart from producing multiple particles, this gun could also produce a single particle wherever the user wishes, having always the 
+nice feature of assigning to the vertex the time required to travel from (0,0,0) to the desired location. This could be 
+useful e.g. when someone wants to shoot straight to the scintillator part. Keep in mind that there is no sense of 
+adding the antiparticle. 
+As an example, the command below will produce `NEVENTS` GEN-SIM-DIGI events with `NPART` sets of particles (per event) of type `PART_PDGID` 
+in the energy range from `EMIN` to `EMAX` (Pt option not available), radius range from `RMIN` to `RMAX`, z position from `ZMIN` to `ZMAX`, parallel to the beamline, with a distance between the particles vertices of deltaPhi = DELTA/R. 
+
+```
+  python SubmitHGCalPGun.py
+  --datTier GSD
+  --nevts NEVENTS
+  --evtsperjob NPERJOB
+  --queue QUEUENAME
+  --partID PART_PDGID
+  --nPart NPART
+  --thresholdMin EMIN
+  --thresholdMax EMAX
+  --rMin RMIN
+  --rMax RMAX
+  --zMin ZMIN
+  --zMax ZMAX
+  --Delta DELTA
+  --pointing 	
+  --etaMin ETAMIN
+  --etaMax ETAMAX
+  --gunType E
+  --gunMode closeby
+  --tag MYTAG
+```
 
 ## RECO step
 
@@ -147,7 +184,7 @@ python SubmitHGCalPGun.py \
 
 Starting from `CMSSW_10_4_0_pre3` (cms-sw/cmssw#25208), the handling of the calibration weights has been rewritten to be more generic and play nicely with eras. PR #54 took care of these changes.
 
-# to contribute
+# Contributing
 
 We use the _fork and pull_ model:
 

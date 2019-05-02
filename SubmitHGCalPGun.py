@@ -29,11 +29,18 @@ def parseOptions():
     parser.add_option('', '--thresholdMax',  dest='thresholdMax',  type=float, default=35.0,    help='max. threshold value')
     parser.add_option('', '--etaMin',  dest='etaMin',  type=float, default=1.479,  help='min. eta value')
     parser.add_option('', '--etaMax',  dest='etaMax',  type=float, default=3.0,    help='max. eta value')
-    parser.add_option('', '--gunMode',   dest='gunMode',   type='string', default='default',    help='default or pythia8')
+    parser.add_option('', '--zMin',  dest='zMin',  type=float, default=321.6,  help='min. z value start of EE at V10')
+    parser.add_option('', '--zMax',  dest='zMax',  type=float, default=650.0,    help='max. z value')
+    parser.add_option('', '--rMin',  dest='rMin',  type=float, default=0.0,  help='min. r value')
+    parser.add_option('', '--rMax',  dest='rMax',  type=float, default=300.0,    help='max. r value')
+    parser.add_option('', '--pointing',  action='store_false',  dest='pointing',  default=True,    help='pointing to (0,0,0) in case of closeby gun')
+    parser.add_option('', '--overlapping',  action='store_true',  dest='overlapping',  default=False,    help='particles will be generated in window [phiMin,phiMax], [rMin,rMax] (true) or with a DeltaPhi=Delta/R (default false) in case of closeby gun')
+    parser.add_option('', '--gunMode',   dest='gunMode',   type='string', default='default',    help='default or pythia8 or closeby')
     parser.add_option('', '--gunType',   dest='gunType',   type='string', default='Pt',    help='Pt or E gun')
     parser.add_option('', '--InConeID', dest='InConeID',   type='string',     default='', help='PDG ID for single particle to be generated in the cone (supported as PARTID), default is empty string (none)')
     parser.add_option('', '--MinDeltaR',  dest='MinDeltaR',  type=float, default=0.3, help='min. DR value')
     parser.add_option('', '--MaxDeltaR',  dest='MaxDeltaR',  type=float, default=0.4, help='max. DR value')
+    parser.add_option('', '--Delta',  dest='Delta',  type=float, default=0.25, help=' arc-distance between two consecutive vertices over the circle of radius R')
     parser.add_option('', '--MinMomRatio',  dest='MinMomRatio',  type=float, default=0.5, help='min. momentum ratio for particle inside of the cone and particle that defines the cone')
     parser.add_option('', '--MaxMomRatio',  dest='MaxMomRatio',  type=float, default=2.0, help='max. momentum ratio for particle inside of the cone and particle that defines the cone')
     parser.add_option('-l', '--local',  action='store_true', dest='LOCAL',  default=False, help='store output dir locally instead of at EOS CMG area, default is False.')
@@ -65,7 +72,7 @@ def parseOptions():
         print 'ERROR: CMSSW does not seem to be set up. Exiting...'
         sys.exit()
 
-    partGunModes = ['default', 'pythia8']
+    partGunModes = ['default', 'pythia8', 'closeby']
     if opt.gunMode not in partGunModes:
         parser.error('Particle gun mode ' + opt.gunMode + ' is not supported. Exiting...')
         sys.exit()
@@ -141,6 +148,8 @@ def printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     print 'INPUTS:     ', [curr_input, 'Particle gun mode: ' + opt.gunMode + ', type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' times per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+'], eta threshold in ['+str(opt.etaMin)+','+str(opt.etaMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
     if (opt.InConeID!='' and opt.DTIER=='GSD'):
         print '             IN-CONE: PDG ID '+str(opt.InConeID)+', deltaR in ['+str(opt.MinDeltaR)+ ','+str(opt.MaxDeltaR)+']'+', momentum ratio in ['+str(opt.MinMomRatio)+ ','+str(opt.MaxMomRatio)+']'
+    if (opt.gunMode == 'closeby' and opt.DTIER=='GSD'):
+        print '             z threshold in ['+str(opt.zMin)+','+str(opt.zMax)+'], r threshold in ['+str(opt.rMin)+','+str(opt.rMax)+'], pointing to (0,0,0) '+str(opt.pointing) + ', overlapping '+str(opt.overlapping)
     print 'STORE AREA: ', [opt.eosArea, currentDir][int(opt.LOCAL)]
     print 'OUTPUT DIR: ', outDir
     print 'QUEUE:      ', opt.QUEUE
@@ -188,6 +197,8 @@ def submitHGCalProduction():
         partGunType = 'Pythia8%sGun' % opt.gunType
     if opt.InConeID != '':
         partGunType = 'MultiParticleInConeGunProducer'  # change part gun type if needed, keep opt.gunType unchanged (E or Pt) for the "primary particle"
+    if opt.gunMode == 'closeby':
+        partGunType = 'CloseByParticleGunProducer' 
 
     # RELVAL
     DASquery=False
@@ -340,6 +351,14 @@ def submitHGCalProduction():
                 s_template=s_template.replace('MAXTHRESHSTRING',"Max"+str(opt.gunType))
                 s_template=s_template.replace('MINTHRESHSTRING',"Min"+str(opt.gunType))
                 s_template=s_template.replace('GUNMODE',str(opt.gunMode))
+                if opt.gunMode == 'closeby':
+                    s_template=s_template.replace('DUMMYZMIN',str(opt.zMin))
+                    s_template=s_template.replace('DUMMYZMAX',str(opt.zMax))
+                    s_template=s_template.replace('DUMMYDELTA',str(opt.Delta))
+                    s_template=s_template.replace('DUMMYRMIN',str(opt.rMin))
+                    s_template=s_template.replace('DUMMYRMAX',str(opt.rMax))
+                    s_template=s_template.replace('DUMMYPOINTING',str(opt.pointing))
+                    s_template=s_template.replace('DUMMYOVERLAPPING',str(opt.overlapping))
 
 
             elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
