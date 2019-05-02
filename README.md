@@ -85,7 +85,7 @@ Apart from producing multiple particles, this gun could also produce a single pa
 nice feature of assigning to the vertex the time required to travel from (0,0,0) to the desired location. This could be 
 useful e.g. when someone wants to shoot straight to the scintillator part. Keep in mind that there is no sense of 
 adding the antiparticle. 
-Since the gun is based on CMSSW pull requests [#26065](https://github.com/cms-sw/cmssw/pull/26065) and [#26277](https://github.com/cms-sw/cmssw/pull/26277), a CMSSW release after CMSSW_10_6_X_2019-04-02-2300
+Since the gun is based on CMSSW pull requests [#26065](https://github.com/cms-sw/cmssw/pull/26065) and [#26277](https://github.com/cms-sw/cmssw/pull/26277), CMSSW release CMSSW_10_6_0_pre4 or later 
 should be used. 
 As an example, the command below will produce `NEVENTS` GEN-SIM-DIGI events with `NPART` sets of particles (per event) of type `PART_PDGID` 
 in the energy range from `EMIN` to `EMAX` (Pt option not available), radius range from `RMIN` to `RMAX`, z position from `ZMIN` to `ZMAX`, parallel to the beamline, with a distance between the particles vertices of deltaPhi = DELTA/R. 
