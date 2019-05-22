@@ -67,6 +67,8 @@ elif gunmode == 'closeby':
             Delta = cms.double(DUMMYDELTA),
             Pointing = cms.bool(DUMMYPOINTING),
             Overlapping = cms.bool(DUMMYOVERLAPPING),
+            RandomShoot = cms.bool(DUMMYRANDOMSHOOT),
+            NParticles = cms.int32(DUMMYNRANDOMPARTICLES),
             MaxEta = cms.double(DUMMYETAMAX),
             MinEta = cms.double(DUMMYETAMIN),
             MaxPhi = cms.double(3.14159265359/6.),
