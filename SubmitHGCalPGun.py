@@ -35,6 +35,8 @@ def parseOptions():
     parser.add_option('', '--rMax',  dest='rMax',  type=float, default=300.0,    help='max. r value')
     parser.add_option('', '--pointing',  action='store_false',  dest='pointing',  default=True,    help='pointing to (0,0,0) in case of closeby gun')
     parser.add_option('', '--overlapping',  action='store_true',  dest='overlapping',  default=False,    help='particles will be generated in window [phiMin,phiMax], [rMin,rMax] (true) or with a DeltaPhi=Delta/R (default false) in case of closeby gun')
+    parser.add_option('', '--randomShoot',  action='store_true',  dest='randomShoot',  default=False,    help='if true it will randomly choose one particle in the range [1, NParticles +1 ]')
+    parser.add_option('', '--nRandomPart',  dest='NRANDOMPART',  type=int,   default=1,      help='This is used together with randomShoot to shoot randomly [1, NParticles +1 ] particles, default is 1')
     parser.add_option('', '--gunMode',   dest='gunMode',   type='string', default='default',    help='default or pythia8 or closeby')
     parser.add_option('', '--gunType',   dest='gunType',   type='string', default='Pt',    help='Pt or E gun')
     parser.add_option('', '--InConeID', dest='InConeID',   type='string',     default='', help='PDG ID for single particle to be generated in the cone (supported as PARTID), default is empty string (none)')
@@ -149,7 +151,7 @@ def printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     if (opt.InConeID!='' and opt.DTIER=='GSD'):
         print '             IN-CONE: PDG ID '+str(opt.InConeID)+', deltaR in ['+str(opt.MinDeltaR)+ ','+str(opt.MaxDeltaR)+']'+', momentum ratio in ['+str(opt.MinMomRatio)+ ','+str(opt.MaxMomRatio)+']'
     if (opt.gunMode == 'closeby' and opt.DTIER=='GSD'):
-        print '             z threshold in ['+str(opt.zMin)+','+str(opt.zMax)+'], r threshold in ['+str(opt.rMin)+','+str(opt.rMax)+'], pointing to (0,0,0) '+str(opt.pointing) + ', overlapping '+str(opt.overlapping)
+        print '             z threshold in ['+str(opt.zMin)+','+str(opt.zMax)+'], r threshold in ['+str(opt.rMin)+','+str(opt.rMax)+'], pointing to (0,0,0) '+str(opt.pointing) + ', overlapping '+str(opt.overlapping)+ ', randomShoot '+str(opt.randomShoot) + ', nRandomPart '+str(opt.NRANDOMPART) 
     print 'STORE AREA: ', [opt.eosArea, currentDir][int(opt.LOCAL)]
     print 'OUTPUT DIR: ', outDir
     print 'QUEUE:      ', opt.QUEUE
@@ -359,6 +361,8 @@ def submitHGCalProduction():
                     s_template=s_template.replace('DUMMYRMAX',str(opt.rMax))
                     s_template=s_template.replace('DUMMYPOINTING',str(opt.pointing))
                     s_template=s_template.replace('DUMMYOVERLAPPING',str(opt.overlapping))
+                    s_template=s_template.replace('DUMMYRANDOMSHOOT',str(opt.randomShoot))
+                    s_template=s_template.replace('DUMMYNRANDOMPARTICLES',str(opt.NRANDOMPART))
 
 
             elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
