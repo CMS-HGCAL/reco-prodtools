@@ -11,7 +11,7 @@ Then anywhere,
 ```shell
 git clone git@github.com:CMS-HGCAL/reco-prodtools.git reco_prodtools
 cd reco_prodtools/templates/python
-./produceSkeletons_D35_NoSmear_noPU.sh
+./produceSkeletons_D41_NoSmear_noPU.sh
 cd ../../..
 scram b
 python SubmitHGCalPGun.py --nevts 2 --evtsperjob 1 --queue 1nh --partID 13 --thresholdMin 35 --thresholdMax 35 --gunType E --tag test_${USER}
@@ -26,9 +26,9 @@ For details on the pileup scenario, please see [Configuration/StandardSequences/
 
 | Snippet        | Era            | Geometry       | Beamspot       | PU             |
 | -------------- | -------------- | -------------- | -------------- | -------------- |
-| [produceSkeletons_D35_NoSmear_noPU.sh](templates/python/produceSkeletons_D35_NoSmear_noPU.sh) | Phase2C4_timing_layer_bar | D35 | NoSmear | none |
-| [produceSkeletons_D35_NoSmear_PU_AVE_200_BX_25ns.sh](templates/python/produceSkeletons_D35_NoSmear_PU_AVE_200_BX_25ns.sh) | Phase2C4_timing_layer_bar | D35 | NoSmear | AVE_200_BX_25ns |
-| [produceSkeletons_D35_VtxSmearedHLLHC_noPU.sh](templates/python/produceSkeletons_D35_VtxSmearedHLLHC_noPU.sh) | Phase2C4_timing_layer_bar | D35 | VtxSmearedHLLHC | none |
+| [produceSkeletons_D41_NoSmear_noPU.sh](templates/python/produceSkeletons_D41_NoSmear_noPU.sh) | Phase2C8_timing_layer_bar | D41 | NoSmear | none |
+| [produceSkeletons_D41_NoSmear_PU_AVE_200_BX_25ns.sh](templates/python/produceSkeletons_D41_NoSmear_PU_AVE_200_BX_25ns.sh) | Phase2C8_timing_layer_bar | D41 | NoSmear | AVE_200_BX_25ns |
+| [produceSkeletons_D41_VtxSmearedHLLHC_noPU.sh](templates/python/produceSkeletons_D41_VtxSmearedHLLHC_noPU.sh) | Phase2C8_timing_layer_bar | D41 | VtxSmearedHLLHC | none |
 
 Whenever you would like to change configuration, change to the `reco_prodtools/templates/python` directory and execute the corresponding script. Then make sure to run `scram b`.
 
