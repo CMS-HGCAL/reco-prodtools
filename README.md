@@ -189,6 +189,56 @@ python SubmitHGCalPGun.py \
 
 Starting from `CMSSW_10_4_0_pre3` (cms-sw/cmssw#25208), the handling of the calibration weights has been rewritten to be more generic and play nicely with eras. PR #54 took care of these changes.
 
+## Updating and adding configurations
+
+To update and add new configurations, you need to pick a geometry as listed in [Configuration/Geometry/README.md](https://github.com/cms-sw/cmssw/blob/master/Configuration/Geometry/README.md), and then run the following command grepping for your desired geometry (here `D41`) and usually also a process of interest (here `SinglePiPt`):
+
+```shell
+runTheMatrix.py -w upgrade -n | grep D41 | grep SinglePiPt
+```
+
+This will result in output similar to the following:
+
+```shell
+29088.0 SinglePiPt25Eta1p7_2p7_2023D41_GenSimHLBeamSpotFull+DigiFullTrigger_2023D41+RecoFullGlobal_2023D41+HARVESTFullGlobal_2023D41
+29288.0 SinglePiPt25Eta1p7_2p7_2023D41PU_GenSimHLBeamSpotFull+DigiFullTriggerPU_2023D41PU+RecoFullGlobalPU_2023D41PU+HARVESTFullGlobalPU_2023D41PU
+```
+
+In the above case, there are two workflows listed, one with and one without PU. Let's pick the one with PU, `29288.0`, and get the configs:
+
+```shell
+runTheMatrix.py -w upgrade -l 29288.0 --command="--no_exec" --dryRun
+```
+
+This will run a while and create a new directory that contains the configs (e.g. `29288.0_SinglePiPt25Eta1p7_2p7+SinglePiPt25Eta1p7_2p7_2023D41PU_GenSimHLBeamSpotFull+DigiFullTriggerPU_2023D41PU+RecoFullGlobalPU_2023D41PU+HARVESTFullGlobalPU_2023D41PU`). Further, several `cmsDriver.py` scripts will be printed out to the screen. These are the ones that need to be adjusted and put into the corresponding shell scripts (have a look at the existing shell scripts themselves).
+
+Some general guidelines:
+
+* For all commands remove `--filein` and `--fileout` options.
+* Add `python_filename` option
+
+The first command combines step1 and step2 (GSD):
+
+* mix in pileup (for 200 PU use e.g. `--pileup AVE_200_BX_25ns`)
+* run up to `DIGI...HLT:@fake2`
+
+The following changes are implemented on top/need to be adjusted:
+
+* `--beamspot HLLHC14TeV` ➜ `--beamspot NoSmear` (if you don't want a smeared beamspot)
+* `--eventcontent FEVTDEBUG` ➜ `--eventcontent FEVTDEBUGHLT` (since step2 has that)
+
+The second command is step3 removing overlap with step2 (RECO):
+
+* remove pileup part
+* also remove `MINIAODSIM`, `PAT`
+* remove from `VALIDATION@miniAODValidation`
+* remove from `DQM:@miniAODDQM`
+
+The third command is a copy of the second only re-running RECO (for NTUP):
+
+* remove `DQM`
+* add `processName=NTUP` option
+
 ## Contributing
 
 We use the _fork and pull_ model:
