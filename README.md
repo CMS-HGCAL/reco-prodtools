@@ -12,6 +12,7 @@ cd reco_prodtools/templates/python
 ./produceSkeletons_D17_NoSmear_NoPU.sh
 cd ../../..
 scram b
+cd reco_prodtools/
 python SubmitHGCalPGun.py --nevts 2 --evtsperjob 1 --queue 1nh --partID 13 --thresholdMin 35 --thresholdMax 35 --gunType E --tag test_${USER}
 ```
 
