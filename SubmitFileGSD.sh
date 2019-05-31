@@ -40,9 +40,9 @@ if [ ${localFlag} == "True" ]
 	cp *DQM*.root ${curDir}/${outDir}/DQM/
     fi
   else
-    xrdcp -N -v *${dataTier}*.root root://eoscms.cern.ch/${eosArea}/${outDir}/${dataTier}/
+    cp *${dataTier}*.root root://eoscms.cern.ch/${eosArea}/${outDir}/${dataTier}/
     if [ ${keepDQMfile} == "True" ]
 	then
-	xrdcp -N -v *DQM*.root root://eoscms.cern.ch/${eosArea}/${outDir}/DQM/
+	cp *DQM*.root root://eoscms.cern.ch/${eosArea}/${outDir}/DQM/
     fi	
 fi
