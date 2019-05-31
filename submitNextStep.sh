@@ -2,7 +2,10 @@
 #
 # Script to automatically submit jobs for next step (RECO or NTUP) for all
 # samples in SAMPLEDIR. Can adjust events per job with variables listed
-# below (EVTSRECO and EVTSNTUP).
+# below (EVTSRECO and EVTSNTUP). The folders where the GSD, RECO or NTUP folders
+#are in turn stored must be specified as follows:
+#
+# bash submitNextStep.sh folder1 folder2 ...
 #
 SAMPLEDIR='/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production'
 MYDIRS=( "$@" )
