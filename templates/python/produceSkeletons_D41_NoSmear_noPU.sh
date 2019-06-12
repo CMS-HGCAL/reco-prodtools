@@ -26,7 +26,7 @@
 # Those commands should be regularly checked and, in case of changes, propagated into this script!
 
 cmsDriver.py SinglePiPt25Eta1p7_2p7_cfi  --conditions auto:phase2_realistic \
-  -n 10 --era Phase2C8_timing_layer_bar --eventcontent FEVTDEBUGHLT \
+  -n 10 --era Phase2C8 --eventcontent FEVTDEBUGHLT \
   -s GEN,SIM,DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,HLT:@fake2 \
   --datatier GEN-SIM \
   --beamspot NoSmear \
@@ -35,14 +35,14 @@ cmsDriver.py SinglePiPt25Eta1p7_2p7_cfi  --conditions auto:phase2_realistic \
 
 
 cmsDriver.py step3  --conditions auto:phase2_realistic -n 10 \
-  --era Phase2C8_timing_layer_bar --eventcontent FEVTDEBUGHLT,DQM --runUnscheduled \
+  --era Phase2C8 --eventcontent FEVTDEBUGHLT,DQM --runUnscheduled \
   -s RAW2DIGI,L1Reco,RECO,RECOSIM,VALIDATION:@phase2Validation,DQM:@phase2 \
   --datatier GEN-SIM-RECO,DQMIO --geometry Extended2023D41 \
   --no_exec --python_filename=RECO_fragment.py
 
 
 cmsDriver.py step3  --conditions auto:phase2_realistic -n 10 \
-  --era Phase2C8_timing_layer_bar --eventcontent FEVTDEBUGHLT --runUnscheduled \
+  --era Phase2C8 --eventcontent FEVTDEBUGHLT --runUnscheduled \
   -s RAW2DIGI,L1Reco,RECO,RECOSIM \
   --datatier GEN-SIM-RECO --geometry Extended2023D41 \
   --no_exec --python_filename=NTUP_fragment.py \
