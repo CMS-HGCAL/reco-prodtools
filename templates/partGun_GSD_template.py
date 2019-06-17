@@ -97,4 +97,5 @@ elif 'physproc' in gunmode:
         thr=float(proc_cfg[2])
         minObj=int(proc_cfg[3])
         filterPath=defineJetBasedBias(process,jetColl=jetColl,thr=thr,minObj=minObj)
+        process.schedule.extend([filterPath])
         process.FEVTDEBUGHLToutput.SelectEvents.SelectEvents=cms.vstring(filterPath.label())
