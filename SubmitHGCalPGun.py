@@ -75,7 +75,7 @@ def parseOptions():
         sys.exit()
 
     partGunModes = ['default', 'pythia8', 'closeby']
-    if opt.gunMode not in partGunModes:
+    if opt.gunMode not in partGunModes and not 'physproc' in opt.gunMode:
         parser.error('Particle gun mode ' + opt.gunMode + ' is not supported. Exiting...')
         sys.exit()
 
@@ -105,6 +105,8 @@ def parseOptions():
     if not (set(inPartID) < set(particles) or opt.PARTID == ''):
         parser.error('Particle(s) with ID(s) ' + opt.PARTID + ' is not supported. Exiting...')
         sys.exit()
+    if 'physproc' in opt.gunMode:
+        particles=['0']
 
     # sanity check for generation of particle within the cone (require to be compatibe with NPART==1, gunType==Pt and supported particles)
     if (opt.InConeID != '') and (opt.InConeID not in particles):
@@ -147,7 +149,10 @@ def printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
         curr_input= opt.inDir
     else:
         curr_input= opt.RELVAL
-    print 'INPUTS:     ', [curr_input, 'Particle gun mode: ' + opt.gunMode + ', type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' times per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+'], eta threshold in ['+str(opt.etaMin)+','+str(opt.etaMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
+    if 'physproc' in opt.gunMode:
+        print 'INPUTS:     ', [curr_input, 'Phys proc config.: ' + ' '.join(opt.gunMode.split(':')[1:]),opt.RELVAL][int(opt.DTIER=='GSD')]
+    else:
+        print 'INPUTS:     ', [curr_input, 'Particle gun mode: ' + opt.gunMode + ', type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' times per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+'], eta threshold in ['+str(opt.etaMin)+','+str(opt.etaMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
     if (opt.InConeID!='' and opt.DTIER=='GSD'):
         print '             IN-CONE: PDG ID '+str(opt.InConeID)+', deltaR in ['+str(opt.MinDeltaR)+ ','+str(opt.MaxDeltaR)+']'+', momentum ratio in ['+str(opt.MinMomRatio)+ ','+str(opt.MaxMomRatio)+']'
     if (opt.gunMode == 'closeby' and opt.DTIER=='GSD'):
@@ -197,6 +202,8 @@ def submitHGCalProduction():
     partGunType = 'FlatRandom%sGunProducer' % opt.gunType
     if opt.gunMode == 'pythia8':
         partGunType = 'Pythia8%sGun' % opt.gunType
+    if 'physproc' in opt.gunMode:
+        partGunType = opt.gunMode.split(':')[1]
     if opt.InConeID != '':
         partGunType = 'MultiParticleInConeGunProducer'  # change part gun type if needed, keep opt.gunType unchanged (E or Pt) for the "primary particle"
     if opt.gunMode == 'closeby':
@@ -321,6 +328,8 @@ def submitHGCalProduction():
             # prepare the out file and cfg file by replacing DUMMY entries according to input options
             if DASquery:
                 basename=outDir+'_'+opt.DTIER+'_'+str(job)
+            elif 'physproc' in opt.gunMode:
+                basename='physproc_'.join(opt.gunMode.split(':'))+'_'+opt.DTIER+'_'+str(job)
             else:
                 basename = commonFileNamePrefix + '_PDGid'+"_id".join(sParticle)+'_x'+str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD'])+'_' + opt.gunType+str(opt.thresholdMin)+'To'+str(opt.thresholdMax)+'_'+opt.DTIER+'_'+str(job)
 

@@ -78,3 +78,24 @@ elif gunmode == 'closeby':
         psethack = cms.string('single or multiple particles predefined E moving vertex'),
         firstRun = cms.untracked.uint32(1)
     )
+elif 'physproc' in gunmode:
+
+    #physproc should be a string  of the form physproc:proc[:jetColl:threshold:min_jets]
+
+    proc_cfg=gunmode.split(':')[1:]
+
+    from reco_prodtools.templates.hgcBiasedGenProcesses_cfi import *
+
+
+    print 'Setting process to',proc
+    proc=proc_cfg[0]
+    defineProcessGenerator(process,proc=proc)
+
+    
+    #set a filter path if it's available
+    if len(proc_cfg)==4:
+        jetColl=proc_cfg[1]
+        thr=float(proc_cfg[2])
+        minObj=int(proc_cfg[3])
+        filterPath=defineJetBasedBias(process,jetColl=jetColl,thr=thr,minObj=minObj)
+        process.FEVTDEBUGHLToutput.SelectEvents.SelectEvents=cms.vstring(filterPath.label())
