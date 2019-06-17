@@ -82,15 +82,14 @@ elif 'physproc' in gunmode:
 
     #physproc should be a string  of the form physproc:proc[:jetColl:threshold:min_jets]
 
-    proc_cfg=gunmode.split(':')[1:]
+    proc_cfg=gunmode.split(':')[1:]    
+    proc=proc_cfg[0]
 
     from reco_prodtools.templates.hgcBiasedGenProcesses_cfi import *
 
-
+    #define the process
     print 'Setting process to',proc
-    proc=proc_cfg[0]
     defineProcessGenerator(process,proc=proc)
-
     
     #set a filter path if it's available
     if len(proc_cfg)==4:
