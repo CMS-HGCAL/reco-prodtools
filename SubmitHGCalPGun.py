@@ -329,7 +329,7 @@ def submitHGCalProduction():
             if DASquery:
                 basename=outDir+'_'+opt.DTIER+'_'+str(job)
             elif 'physproc' in opt.gunMode:
-                basename='physproc_'.join(opt.gunMode.split(':'))+'_'+opt.DTIER+'_'+str(job)
+                basename='physproc_'+'_'.join(opt.gunMode.split(':'))+'_'+opt.DTIER+'_'+str(job)
             else:
                 basename = commonFileNamePrefix + '_PDGid'+"_id".join(sParticle)+'_x'+str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD'])+'_' + opt.gunType+str(opt.thresholdMin)+'To'+str(opt.thresholdMax)+'_'+opt.DTIER+'_'+str(job)
 
