@@ -240,7 +240,7 @@ The third command is a copy of the second only re-running RECO (for NTUP):
 * remove `DQM`
 * add `processName=NTUP` option
 
-For more details see the [configuration files listed above](available-configurations).
+For more details see the [configuration files listed above](#available-configurations).
 
 ## Contributing
 
