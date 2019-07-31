@@ -37,7 +37,7 @@ cmsDriver.py TTbar_14TeV_TuneCUETP8M1_cfi \
   -s GEN,SIM,DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,HLT:@fake2 \
   --datatier GEN-SIM \
   --beamspot HLLHC14TeV \
-  --geometry Extended2026D41\
+  --geometry Extended2026D41 \
   --no_exec \
   --python_filename=GSD_fragment.py
 
