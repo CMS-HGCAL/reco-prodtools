@@ -5,6 +5,8 @@
 #
 # runTheMatrix.py -w upgrade -l 20488.0 --command="--no_exec" --dryRun
 #
+# The reconstruction as part of the ticl framework is injected into the RECO_fragment.
+#
 # For all commands remove --filein and --fileout options.
 # Add python_filename option
 #
@@ -52,6 +54,8 @@ cmsDriver.py step3 \
   --geometry Extended2026D41 \
   --no_exec \
   --python_filename=RECO_fragment.py
+
+./inject_ticl.sh RECO_fragment.py
 
 
 cmsDriver.py step3 \
