@@ -27,9 +27,9 @@ For details on the pileup scenario, please see [Configuration/StandardSequences/
 
 | Snippet        | Era            | Geometry       | Beamspot       | PU             |
 | -------------- | -------------- | -------------- | -------------- | -------------- |
-| [produceSkeletons_D41_NoSmear_noPU.sh](templates/python/produceSkeletons_D41_NoSmear_noPU.sh) | Phase2C8 | D41 | NoSmear | none |
-| [produceSkeletons_D41_NoSmear_PU_AVE_200_BX_25ns.sh](templates/python/produceSkeletons_D41_NoSmear_PU_AVE_200_BX_25ns.sh) | Phase2C8 | D41 | NoSmear | AVE_200_BX_25ns |
-| [produceSkeletons_D41_VtxSmearedHLLHC_noPU.sh](templates/python/produceSkeletons_D41_VtxSmearedHLLHC_noPU.sh) | Phase2C8 | D41 | VtxSmearedHLLHC | none |
+| [produceSkeletons_D41_NoSmear_noPU.sh](templates/python/produceSkeletons_D41_NoSmear_noPU.sh) | Phase2C8_timing_layer_bar | D41 | NoSmear | none |
+| [produceSkeletons_D41_NoSmear_PU_AVE_200_BX_25ns.sh](templates/python/produceSkeletons_D41_NoSmear_PU_AVE_200_BX_25ns.sh) | Phase2C8_timing_layer_bar | D41 | NoSmear | AVE_200_BX_25ns |
+| [produceSkeletons_D41_VtxSmearedHLLHC_noPU.sh](templates/python/produceSkeletons_D41_VtxSmearedHLLHC_noPU.sh) | Phase2C8_timing_layer_bar | D41 | VtxSmearedHLLHC | none |
 
 Whenever you would like to change configuration, change to the `reco_prodtools/templates/python` directory and execute the corresponding script. Then make sure to run `scram b`.
 
@@ -201,17 +201,17 @@ runTheMatrix.py -w upgrade -n | grep D41 | grep SinglePiPt
 This will result in output similar to the following:
 
 ```shell
-29088.0 SinglePiPt25Eta1p7_2p7_2023D41_GenSimHLBeamSpotFull+DigiFullTrigger_2023D41+RecoFullGlobal_2023D41+HARVESTFullGlobal_2023D41
-29288.0 SinglePiPt25Eta1p7_2p7_2023D41PU_GenSimHLBeamSpotFull+DigiFullTriggerPU_2023D41PU+RecoFullGlobalPU_2023D41PU+HARVESTFullGlobalPU_2023D41PU
+20488.0 SinglePiPt25Eta1p7_2p7_2026D41_GenSimHLBeamSpotFull+DigiFullTrigger_2026D41+RecoFullGlobal_2026D41+HARVESTFullGlobal_2026D41
+20688.0 SinglePiPt25Eta1p7_2p7_2026D41PU_GenSimHLBeamSpotFull+DigiFullTriggerPU_2026D41PU+RecoFullGlobalPU_2026D41PU+HARVESTFullGlobalPU_2026D41PU
 ```
 
-In the above case, there are two workflows listed, one with and one without PU. Let's pick the one with PU, `29288.0`, and get the configs:
+In the above case, there are two workflows listed, one with and one without PU. Let's pick the one with PU, `20688.0`, and get the configs:
 
 ```shell
-runTheMatrix.py -w upgrade -l 29288.0 --command="--no_exec" --dryRun
+runTheMatrix.py -w upgrade -l 20688.0 --command="--no_exec" --dryRun
 ```
 
-This will run a while and create a new directory that contains the configs (e.g. `29288.0_SinglePiPt25Eta1p7_2p7+SinglePiPt25Eta1p7_2p7_2023D41PU_GenSimHLBeamSpotFull+DigiFullTriggerPU_2023D41PU+RecoFullGlobalPU_2023D41PU+HARVESTFullGlobalPU_2023D41PU`). Further, several `cmsDriver.py` scripts will be printed out to the screen. These are the ones that need to be adjusted and put into the corresponding shell scripts (have a look at the existing shell scripts themselves).
+This will run a while and create a new directory that contains the configs (e.g. `20688.0_SinglePiPt25Eta1p7_2p7_2026D41PU_GenSimHLBeamSpotFull+DigiFullTriggerPU_2026D41PU+RecoFullGlobalPU_2026D41PU+HARVESTFullGlobalPU_2026D41PU`). Further, several `cmsDriver.py` scripts will be printed out to the screen. These are the ones that need to be adjusted and put into the corresponding shell scripts (have a look at the existing shell scripts themselves).
 
 Some general guidelines:
 
@@ -239,6 +239,8 @@ The third command is a copy of the second only re-running RECO (for NTUP):
 
 * remove `DQM`
 * add `processName=NTUP` option
+
+For more details see the [configuration files listed above](available-configurations).
 
 ## Contributing
 
