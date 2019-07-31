@@ -31,7 +31,7 @@
 cmsDriver.py SinglePiPt25Eta1p7_2p7_cfi \
   --conditions auto:phase2_realistic \
   -n 10 \
-  --era Phase2C8_timing_layer_bar \
+  --era Phase2C8 \
   --eventcontent FEVTDEBUGHLT \
   -s GEN,SIM,DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,HLT:@fake2 \
   --datatier GEN-SIM \
@@ -44,7 +44,7 @@ cmsDriver.py SinglePiPt25Eta1p7_2p7_cfi \
 cmsDriver.py step3 \
   --conditions auto:phase2_realistic \
   -n 10 \
-  --era Phase2C8_timing_layer_bar \
+  --era Phase2C8 \
   --eventcontent FEVTDEBUGHLT,DQM \
   --runUnscheduled \
   -s RAW2DIGI,L1Reco,RECO,RECOSIM,VALIDATION:@phase2Validation,DQM:@phase2 \
@@ -57,7 +57,7 @@ cmsDriver.py step3 \
 cmsDriver.py step3 \
   --conditions auto:phase2_realistic \
   -n 10 \
-  --era Phase2C8_timing_layer_bar \
+  --era Phase2C8 \
   --eventcontent FEVTDEBUGHLT \
   --runUnscheduled \
   -s RAW2DIGI,L1Reco,RECO,RECOSIM \

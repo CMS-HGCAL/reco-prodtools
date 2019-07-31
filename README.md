@@ -27,9 +27,9 @@ For details on the pileup scenario, please see [Configuration/StandardSequences/
 
 | Snippet        | Era            | Geometry       | Beamspot       | PU             |
 | -------------- | -------------- | -------------- | -------------- | -------------- |
-| [produceSkeletons_D41_NoSmear_noPU.sh](templates/python/produceSkeletons_D41_NoSmear_noPU.sh) | Phase2C8_timing_layer_bar | D41 | NoSmear | none |
-| [produceSkeletons_D41_NoSmear_PU_AVE_200_BX_25ns.sh](templates/python/produceSkeletons_D41_NoSmear_PU_AVE_200_BX_25ns.sh) | Phase2C8_timing_layer_bar | D41 | NoSmear | AVE_200_BX_25ns |
-| [produceSkeletons_D41_VtxSmearedHLLHC_noPU.sh](templates/python/produceSkeletons_D41_VtxSmearedHLLHC_noPU.sh) | Phase2C8_timing_layer_bar | D41 | VtxSmearedHLLHC | none |
+| [produceSkeletons_D41_NoSmear_noPU.sh](templates/python/produceSkeletons_D41_NoSmear_noPU.sh) | Phase2C8 | D41 | NoSmear | none |
+| [produceSkeletons_D41_NoSmear_PU_AVE_200_BX_25ns.sh](templates/python/produceSkeletons_D41_NoSmear_PU_AVE_200_BX_25ns.sh) | Phase2C8 | D41 | NoSmear | AVE_200_BX_25ns |
+| [produceSkeletons_D41_VtxSmearedHLLHC_noPU.sh](templates/python/produceSkeletons_D41_VtxSmearedHLLHC_noPU.sh) | Phase2C8 | D41 | VtxSmearedHLLHC | none |
 
 Whenever you would like to change configuration, change to the `reco_prodtools/templates/python` directory and execute the corresponding script. Then make sure to run `scram b`.
 
