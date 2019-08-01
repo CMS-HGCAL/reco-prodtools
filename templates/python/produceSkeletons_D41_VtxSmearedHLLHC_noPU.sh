@@ -56,7 +56,7 @@ cmsDriver.py step3 \
   --no_exec \
   --python_filename=RECO_fragment.py
 
-./inject_ticl.sh RECO_fragment.py
+./inject_ticl.sh RECO_fragment.py || 2>&1 echo -e "\nticl injection failed\n"
 
 
 cmsDriver.py step3 \
