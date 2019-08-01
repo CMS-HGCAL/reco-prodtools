@@ -22,7 +22,7 @@ action() {
 
     # define what to inject where
     local hook="# customisation of the process."
-    local content="\n# run TICL\nfrom RecoHGCal.TICL.ticl_iterations import TICL_iterations_withReco\nprocess = TICL_iterations_withReco(process)"
+    local content="# run TICL\nfrom RecoHGCal.TICL.ticl_iterations import TICL_iterations_withReco\nprocess = TICL_iterations_withReco(process)"
 
     # do the injection
     sed "/$hook/a $content" -i "$fragment_file"
