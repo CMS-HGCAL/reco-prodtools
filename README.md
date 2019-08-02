@@ -33,6 +33,12 @@ For details on the pileup scenario, please see [Configuration/StandardSequences/
 
 Whenever you would like to change configuration, change to the `reco_prodtools/templates/python` directory and execute the corresponding script. Then make sure to run `scram b`.
 
+The processing of TICL iterations is added into the RECO fragment by default. To disable that, add `no-ticl` to the skeleton creation script, e.g.:
+
+```shell
+./produceSkeletons_D41_NoSmear_noPU.sh no-ticl
+```
+
 ## Details
 
 To produce `NEVENTS` GEN-SIM-DIGI events with `NPART` sets of particles (per event) of type `PART_PDGID` and in the p_T range from `PTMIN` to `PTMAX`, one should run:
