@@ -65,7 +65,7 @@ def defineProcessGenerator(process,proc='minbias'):
     )
 
 
-def defineJetBasedBias(process,jetColl="ak8GenJetsNoNu",thr=100,minObj=1):
+def defineJetBasedBias(process, jetColl="ak8GenJetsNoNu", thr=100, minObj=1):
 
     """
     defines a path to execute to filter the output based on a given gen-jet collection

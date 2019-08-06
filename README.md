@@ -4,7 +4,7 @@ Home of the tools to produce samples for HGCAL reconstruction studies
 
 * [Getting started](#getting-started)
 * [Available configurations](#available-configurations)
-* [Available guns/processes](#available-guns-processes)
+* [Available guns and processes](#available-guns-and-processes)
 * [Details](#details)
   * [Close-by gun](#close-by-gun)
   * [Physics processes](#physics-processes)
@@ -46,7 +46,7 @@ For details on the pileup scenario, please see [Configuration/StandardSequences/
 
 Whenever you would like to change configuration, change to the `reco_prodtools/templates/python` directory and execute the corresponding script. Then make sure to run `scram b`.
 
-## Available guns/processes
+## Available guns and processes
 
 The production tools allow you to generate a plethora of processes (links lead to implementation in CMSSW):
 
@@ -155,7 +155,7 @@ in the energy range from `EMIN` to `EMAX` (Pt option not available), radius rang
 
 ### Physics processes
 
-The physics processes listed [above](#available-guns-processes) can be generated as follows using `gunMode` set to `physproc`:
+The physics processes listed [above](#available-guns-and-processes) can be generated as follows using `gunMode` set to `physproc` and the `gunType` to the process of your choice:
 
 ```shell
   python SubmitHGCalPGun.py

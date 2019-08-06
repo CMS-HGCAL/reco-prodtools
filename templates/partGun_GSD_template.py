@@ -78,11 +78,12 @@ elif gunmode == 'closeby':
         psethack = cms.string('single or multiple particles predefined E moving vertex'),
         firstRun = cms.untracked.uint32(1)
     )
-elif 'physproc' in gunmode:
+elif gunmode == 'physproc':
 
-    #physproc should be a string  of the form physproc:proc[:jetColl:threshold:min_jets]
-    proc_cfg=gunmode.split(':')[1:]
-    proc=proc_cfg[0]
+    # GUNPRODUCERTYPE is a string in the form of proc[:jetColl:threshold:min_jets]
+    physicsProcess = 'GUNPRODUCERTYPE'
+    proc_cfg = physicsProcess.split(':')
+    proc = proc_cfg[0]
 
     from reco_prodtools.templates.hgcBiasedGenProcesses_cfi import *
 
@@ -92,13 +93,13 @@ elif 'physproc' in gunmode:
 
     #set a filter path if it's available
     if len(proc_cfg)==4:
-        jetColl=proc_cfg[1]
-        thr=float(proc_cfg[2])
-        minObj=int(proc_cfg[3])
+        jetColl = proc_cfg[1]
+        thr = float(proc_cfg[2])
+        minObj = int(proc_cfg[3])
         print 'Adding a filter with the following settings:'
         print '\tgen-jet collection for filtering:', jetColl
         print '\tpT threshold [GeV]:', thr
         print '\tmin. number of jets with the above threshold:', minObj
-        filterPath=defineJetBasedBias(process,jetColl=jetColl,thr=thr,minObj=minObj)
+        filterPath = defineJetBasedBias(process, jetColl=jetColl, thr=thr, minObj=minObj)
         process.schedule.extend([filterPath])
         process.FEVTDEBUGHLToutput.SelectEvents.SelectEvents=cms.vstring(filterPath.label())
