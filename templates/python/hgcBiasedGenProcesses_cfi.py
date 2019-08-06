@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 from Configuration.Generator.Pythia8CommonSettings_cfi import *
-from Configuration.Generator.Pythia8CUEP8M1Settings_cfi import *
-from Configuration.Generator.PythiaUEZ2starSettings_cfi import *
+from Configuration.Generator.MCTunes2017.PythiaCP5Settings_cfi import *
+
 
 def defineProcessGenerator(process,proc='minbias'):
 
@@ -10,120 +10,121 @@ def defineProcessGenerator(process,proc='minbias'):
     minbias (min.bias), hgg (H->gamgam), wqq (W->qq')
     """
 
-    #MinBias
+    # MinBias
+    # Taken from https://cms-pdmv.cern.ch/mcm/public/restapi/requests/get_fragment/PPD-RunIIFall17GS-00004
     if proc=='minbias':
-        process.generator = cms.EDFilter("Pythia8GeneratorFilter",
-                                         comEnergy = cms.double(14000.0),
-                                         crossSection = cms.untracked.double(8.45E-6),
-                                         filterEfficiency = cms.untracked.double(1.0),
-                                         maxEventsToPrint = cms.untracked.int32(1),
-                                         pythiaPylistVerbosity = cms.untracked.int32(1),
-                                         pythiaHepMCVerbosity = cms.untracked.bool(False),
-                                         PythiaParameters = cms.PSet( pythia8CommonSettings = cms.vstring('Tune:preferLHAPDF = 2',
-                                                                                                          'Main:timesAllowErrors = 10000',
-                                                                                                          'Check:epTolErr = 0.01',
-                                                                                                          #'Beams:setProductionScalesFromLHEF = off',
-                                                                                                          'SLHA:keepSM = on',
-                                                                                                          'SLHA:minMassSM = 1000.',
-                                                                                                          'ParticleDecays:limitTau0 = on',
-                                                                                                          'ParticleDecays:tau0Max = 10',
-                                                                                                          'ParticleDecays:allowPhotonRadiation = on'),
-                                                                      pythia8CUEP8M1Settings = cms.vstring('Tune:pp 14',
-                                                                                                           'Tune:ee 7',
-                                                                                                           'MultipartonInteractions:pT0Ref=2.4024',
-                                                                                                           'MultipartonInteractions:ecmPow=0.25208',
-                                                                                                           'MultipartonInteractions:expPow=1.6'),
-                                                                      processParameters = cms.vstring('Main:timesAllowErrors    = 10000',
-                                                                                                      'ParticleDecays:limitTau0 = on',
-                                                                                                      'ParticleDecays:tauMax = 10',
-                                                                                                      'SoftQCD:nonDiffractive = on',
-                                                                                                      'SoftQCD:singleDiffractive = on',
-                                                                                                      'SoftQCD:doubleDiffractive = on'),
-                                                                      parameterSets = cms.vstring('pythia8CommonSettings',
-                                                                                                  'pythia8CUEP8M1Settings',
-                                                                                                  'processParameters')
-                                                                  )
-                                     )
+        process.generator = cms.EDFilter(
+            "Pythia8GeneratorFilter",
+            maxEventsToPrint = cms.untracked.int32(1),
+            pythiaPylistVerbosity = cms.untracked.int32(1),
+            filterEfficiency = cms.untracked.double(1.0),
+            pythiaHepMCVerbosity = cms.untracked.bool(False),
+            comEnergy = cms.double(14000.),
+            PythiaParameters = cms.PSet( pythia8CommonSettings = cms.vstring(
+                'Tune:preferLHAPDF = 2',
+                'Main:timesAllowErrors = 10000',
+                'Check:epTolErr = 0.01',
+                #'Beams:setProductionScalesFromLHEF = off',
+                'SLHA:keepSM = on',
+                'SLHA:minMassSM = 1000.',
+                'ParticleDecays:limitTau0 = on',
+                'ParticleDecays:tau0Max = 10',
+                'ParticleDecays:allowPhotonRadiation = on'),
+                PythiaParameters = cms.PSet(
+                    pythia8CommonSettingsBlock,
+                    pythia8CP5SettingsBlock,
+                    processParameters = cms.vstring(
+                        'SoftQCD:nonDiffractive = on',
+                        'SoftQCD:singleDiffractive = on',
+                        'SoftQCD:doubleDiffractive = on',
+                    ),
+                    parameterSets = cms.vstring('pythia8CommonSettings',
+                        'pythia8CP5Settings',
+                        'processParameters',
+                    )
+                )
+            )
+        )
 
-    #H->gg
+    # H->gg
+    # adjust e.g. from https://github.com/cms-sw/genproductions/blob/master/python/ThirteenTeV/Higgs/SMHiggsToTauTau_13TeV-powheg_pythia8_cff.py
     if proc=='hgg':
-        process.generator = cms.EDFilter("Pythia8GeneratorFilter",
-                                         comEnergy = cms.double(14000.0),
-                                         crossSection = cms.untracked.double(8.45E-6),
-                                         filterEfficiency = cms.untracked.double(1.0),
-                                         maxEventsToPrint = cms.untracked.int32(1),
-                                         pythiaPylistVerbosity = cms.untracked.int32(1),
-                                         pythiaHepMCVerbosity = cms.untracked.bool(False),
-                                         PythiaParameters = cms.PSet( pythia8CommonSettingsBlock,
-                                                                      pythia8CUEP8M1SettingsBlock,
-                                                                      processParameters = cms.vstring('Main:timesAllowErrors    = 10000',
-                                                                                                      'HiggsSM:all=true',
-                                                                                                      '25:m0 = 125.0',
-                                                                                                      '25:onMode = off',
-                                                                                                      '25:onIfMatch = 22 22'
-                                                                                                  ),
+        process.generator = cms.EDFilter(
+            "Pythia8GeneratorFilter",
+            maxEventsToPrint = cms.untracked.int32(1),
+            pythiaPylistVerbosity = cms.untracked.int32(1),
+            filterEfficiency = cms.untracked.double(1.0),
+            pythiaHepMCVerbosity = cms.untracked.bool(False),
+            comEnergy = cms.double(14000.0),
+            PythiaParameters = cms.PSet(
+                pythia8CommonSettingsBlock,
+                pythia8CP5SettingsBlock,
+                processParameters = cms.vstring(
+                    'Main:timesAllowErrors    = 10000',
+                    'HiggsSM:all=true',
+                    '25:m0 = 125.0',
+                    '25:onMode = off',
+                    '25:onIfMatch = 22 22'
+                ),
+                parameterSets = cms.vstring(
+                    'pythia8CommonSettings',
+                    'pythia8CP5Settings',
+                    'processParameters'
+                )
+            )
+        )
 
-                                                                      parameterSets = cms.vstring('pythia8CommonSettings',
-                                                                                                  'pythia8CUEP8M1Settings',
-                                                                                                  'processParameters')
-                                                                  )
-                                    )
-
-    #W->qq'
+    # W->qq'
+    # adjust e.g. from https://github.com/cms-sw/genproductions/blob/master/python/ThirteenTeV/WToMuNu_M_1000_TuneCUETP8M1_13TeV_pythia8_cfi.py
     if proc=='wqq':
-        process.generator = cms.EDFilter("Pythia6GeneratorFilter",
-                                         pythiaHepMCVerbosity = cms.untracked.bool(False),
-                                         maxEventsToPrint = cms.untracked.int32(0),
-                                         pythiaPylistVerbosity = cms.untracked.int32(1),
-                                         filterEfficiency = cms.untracked.double(1.),
-                                         crossSection = cms.untracked.double(9.181e3),
-                                         comEnergy = cms.double(14000.0),
-                                         PythiaParameters = cms.PSet(
-                                             pythiaUESettingsBlock,
-                                             processParameters = cms.vstring('MSEL        = 0    !User defined processes',
-                                                                             'MSUB(2)     = 1    !W production',
-                                                                             'MDME(190,1) = 1    !W decay into dbar u',
-                                                                             'MDME(191,1) = 1    !W decay into dbar c',
-                                                                             'MDME(192,1) = 0    !W decay into dbar t',
-                                                                             'MDME(194,1) = 1    !W decay into sbar u',
-                                                                             'MDME(195,1) = 1    !W decay into sbar c',
-                                                                             'MDME(196,1) = 0    !W decay into sbar t',
-                                                                             'MDME(198,1) = 0    !W decay into bbar u',
-                                                                             'MDME(199,1) = 0    !W decay into bbar c',
-                                                                             'MDME(200,1) = 0    !W decay into bbar t',
-                                                                             'MDME(205,1) = 0    !W decay into bbar tp',
-                                                                             'MDME(206,1) = 0    !W decay into e+ nu_e',
-                                                                             'MDME(207,1) = 0    !W decay into mu+ nu_mu',
-                                                                             'MDME(208,1) = 0    !W decay into tau+ nu_tau'),
-                                             # This is a vector of ParameterSet names to be read, in this order
-                                             parameterSets = cms.vstring('pythiaUESettings',
-                                                                         'processParameters')
-                                         )
-                                     )
+        process.generator = cms.EDFilter(
+            "Pythia8GeneratorFilter",
+            maxEventsToPrint = cms.untracked.int32(0),
+            pythiaPylistVerbosity = cms.untracked.int32(1),
+            filterEfficiency = cms.untracked.double(1.),
+            pythiaHepMCVerbosity = cms.untracked.bool(False),
+            comEnergy = cms.double(14000.0),
+            PythiaParameters = cms.PSet(
+                pythia8CommonSettingsBlock,
+                pythia8CP5SettingsBlock,
+                processParameters = cms.vstring(
+                    'WeakSingleBoson:ffbar2W = on',
+                    '24:onMode = off',
+                    '24:onIfAny = 1,2,3,4',
+                ),
+                parameterSets = cms.vstring(
+                    'pythia8CommonSettings',
+                    'pythia8CP5Settings',
+                    'processParameters'
+                )
+            )
+        )
 
     #ttbar
     if proc=='ttbar':
-        process.generator = cms.EDFilter("Pythia8GeneratorFilter",
-                                         maxEventsToPrint = cms.untracked.int32(1),
-                                         pythiaPylistVerbosity = cms.untracked.int32(1),
-                                         filterEfficiency = cms.untracked.double(1.0),
-                                         pythiaHepMCVerbosity = cms.untracked.bool(False),
-                                         comEnergy = cms.double(14000.0),
-                                         crossSection = cms.untracked.double(1),
-                                         PythiaParameters = cms.PSet(
-                                             pythia8CommonSettingsBlock,
-                                             pythia8CUEP8M1SettingsBlock,
-                                             processParameters = cms.vstring(
-                                                 'Top:gg2ttbar    = on',
-                                                 'Top:qqbar2ttbar = on',
-                                                 '6:m0 = 172.5',    # top mass',
-                                             ),
-                                             parameterSets = cms.vstring('pythia8CommonSettings',
-                                                                         'pythia8CUEP8M1Settings',
-                                                                         'processParameters',
-                                                                     )
-                                         )
-                                     )
+        process.generator = cms.EDFilter(
+            "Pythia8GeneratorFilter",
+            maxEventsToPrint = cms.untracked.int32(0),
+            pythiaPylistVerbosity = cms.untracked.int32(1),
+            filterEfficiency = cms.untracked.double(1.),
+            pythiaHepMCVerbosity = cms.untracked.bool(False),
+            comEnergy = cms.double(14000.0),
+                PythiaParameters = cms.PSet(
+                    pythia8CommonSettingsBlock,
+                    pythia8CP5SettingsBlock,
+                    processParameters = cms.vstring(
+                        'Top:gg2ttbar    = on',
+                        'Top:qqbar2ttbar = on',
+                        '6:m0 = 172.5',  # top mass'
+                    ),
+                    parameterSets = cms.vstring(
+                        'pythia8CommonSettings',
+                        'pythia8CUEP8M1Settings',
+                        'processParameters',
+                    )
+                )
+            )
+
 
 def defineJetBasedBias(process,jetColl="ak8GenJetsNoNu",thr=100,minObj=1):
 
@@ -133,17 +134,27 @@ def defineJetBasedBias(process,jetColl="ak8GenJetsNoNu",thr=100,minObj=1):
     """
 
     #gen level selection of gen jets in the endcap
-    setattr(process,'ee'+jetColl,cms.EDFilter("CandViewShallowCloneProducer",
-                                              src = cms.InputTag(jetColl),
-                                              cut = cms.string("abs(eta)<3.0 && abs(eta)>1.5") ) )
-    setattr(process,'goodee'+jetColl,cms.EDFilter("CandViewSelector",
-                                                  src = cms.InputTag("ee"+jetColl),
-                                                  cut = cms.string("pt > %f"%thr) ) )
-    setattr(process,jetColl+'Filter',cms.EDFilter("CandViewCountFilter",
-                                                  src = cms.InputTag("goodee"+jetColl),
-                                                  minNumber = cms.uint32(minObj) ) )
-    setattr(process,jetColl+'FilterSeq',cms.Sequence( getattr(process,'ee'+jetColl)*
-                                                      getattr(process,'goodee'+jetColl)*
-                                                      getattr(process,jetColl+'Filter') ) )
-    setattr(process,jetColl+'FilterPath',cms.Path( getattr(process,jetColl+'FilterSeq') ) )
+    setattr(process, 'ee'+jetColl, cms.EDFilter(
+        "CandViewShallowCloneProducer",
+        src = cms.InputTag(jetColl),
+        cut = cms.string("abs(eta)<3.0 && abs(eta)>1.5")
+    ))
+    setattr(process, 'goodee'+jetColl, cms.EDFilter(
+        "CandViewSelector",
+        src = cms.InputTag("ee"+jetColl),
+        cut = cms.string("pt > %f"%thr)
+    ))
+    setattr(process, jetColl+'Filter', cms.EDFilter(
+        "CandViewCountFilter",
+        src = cms.InputTag("goodee"+jetColl),
+        minNumber = cms.uint32(minObj)
+    ))
+    setattr(process, jetColl+'FilterSeq', cms.Sequence(
+        getattr(process,'ee'+jetColl)*
+        getattr(process,'goodee'+jetColl)*
+        getattr(process,jetColl+'Filter')
+    ))
+    setattr(process, jetColl+'FilterPath', cms.Path(
+        getattr(process,jetColl+'FilterSeq')
+    ))
     return getattr(process,jetColl+'FilterPath')
