@@ -7,8 +7,13 @@ def defineProcessGenerator(process,proc='minbias'):
 
     """
     wraps up a couple of interesting processes for HGCal studies
-    minbias (min.bias), hgg (H->gamgam), wqq (W->qq')
+    - minbias (minimum bias),
+    - hgg (H->gammagamma),
+    - wqq (W->qq')
+    - ttbar
     """
+
+
 
     # MinBias
     # Taken from https://cms-pdmv.cern.ch/mcm/public/restapi/requests/get_fragment/PPD-RunIIFall17GS-00004
@@ -20,28 +25,18 @@ def defineProcessGenerator(process,proc='minbias'):
             filterEfficiency = cms.untracked.double(1.0),
             pythiaHepMCVerbosity = cms.untracked.bool(False),
             comEnergy = cms.double(14000.),
-            PythiaParameters = cms.PSet( pythia8CommonSettings = cms.vstring(
-                'Tune:preferLHAPDF = 2',
-                'Main:timesAllowErrors = 10000',
-                'Check:epTolErr = 0.01',
-                #'Beams:setProductionScalesFromLHEF = off',
-                'SLHA:keepSM = on',
-                'SLHA:minMassSM = 1000.',
-                'ParticleDecays:limitTau0 = on',
-                'ParticleDecays:tau0Max = 10',
-                'ParticleDecays:allowPhotonRadiation = on'),
-                PythiaParameters = cms.PSet(
-                    pythia8CommonSettingsBlock,
-                    pythia8CP5SettingsBlock,
-                    processParameters = cms.vstring(
-                        'SoftQCD:nonDiffractive = on',
-                        'SoftQCD:singleDiffractive = on',
-                        'SoftQCD:doubleDiffractive = on',
-                    ),
-                    parameterSets = cms.vstring('pythia8CommonSettings',
-                        'pythia8CP5Settings',
-                        'processParameters',
-                    )
+            PythiaParameters = cms.PSet(
+                pythia8CommonSettingsBlock,
+                pythia8CP5SettingsBlock,
+                processParameters = cms.vstring(
+                    'SoftQCD:nonDiffractive = on',
+                    'SoftQCD:singleDiffractive = on',
+                    'SoftQCD:doubleDiffractive = on',
+                ),
+                parameterSets = cms.vstring(
+                    'pythia8CommonSettings',
+                    'pythia8CP5Settings',
+                    'processParameters',
                 )
             )
         )
@@ -137,7 +132,7 @@ def defineJetBasedBias(process,jetColl="ak8GenJetsNoNu",thr=100,minObj=1):
     setattr(process, 'ee'+jetColl, cms.EDFilter(
         "CandViewShallowCloneProducer",
         src = cms.InputTag(jetColl),
-        cut = cms.string("abs(eta)<3.0 && abs(eta)>1.5")
+        cut = cms.string("abs(eta)<3.0 && abs(eta)>1.479")
     ))
     setattr(process, 'goodee'+jetColl, cms.EDFilter(
         "CandViewSelector",
