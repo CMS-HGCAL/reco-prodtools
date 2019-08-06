@@ -12,113 +12,57 @@ def defineProcessGenerator(process,proc='minbias'):
     - wqq (W->qq')
     - ttbar
     """
+    processParameters = None
+    if proc == 'minbias':
+        # Taken from https://cms-pdmv.cern.ch/mcm/public/restapi/requests/get_fragment/PPD-RunIIFall17GS-00004
+        processParameters = cms.vstring(
+            'SoftQCD:nonDiffractive = on',
+            'SoftQCD:singleDiffractive = on',
+            'SoftQCD:doubleDiffractive = on',
+        )
+    elif proc == 'hgg':
+        # adjust e.g. from https://github.com/cms-sw/genproductions/blob/master/python/ThirteenTeV/Higgs/SMHiggsToTauTau_13TeV-powheg_pythia8_cff.py
+        processParameters = cms.vstring(
+            'Main:timesAllowErrors    = 10000',
+            'HiggsSM:all=true',
+            '25:m0 = 125.0',
+            '25:onMode = off',
+            '25:onIfMatch = 22 22'
+        )
+    elif proc == 'wqq':
+        # adjust e.g. from https://github.com/cms-sw/genproductions/blob/master/python/ThirteenTeV/WToMuNu_M_1000_TuneCUETP8M1_13TeV_pythia8_cfi.py
+        processParameters = cms.vstring(
+            'WeakSingleBoson:ffbar2W = on',
+            '24:onMode = off',
+            '24:onIfAny = 1,2,3,4',
+        )
+    elif proc == 'ttbar':
+        processParameters = cms.vstring(
+            'Top:gg2ttbar    = on',
+            'Top:qqbar2ttbar = on',
+            '6:m0 = 172.5',  # top mass'
+        )
+    else:
+        raise ValueError('Process \"%s\" not defined.'.format(proc))
 
-
-
-    # MinBias
-    # Taken from https://cms-pdmv.cern.ch/mcm/public/restapi/requests/get_fragment/PPD-RunIIFall17GS-00004
-    if proc=='minbias':
-        process.generator = cms.EDFilter(
-            "Pythia8GeneratorFilter",
-            maxEventsToPrint = cms.untracked.int32(1),
-            pythiaPylistVerbosity = cms.untracked.int32(1),
-            filterEfficiency = cms.untracked.double(1.0),
-            pythiaHepMCVerbosity = cms.untracked.bool(False),
-            comEnergy = cms.double(14000.),
-            PythiaParameters = cms.PSet(
-                pythia8CommonSettingsBlock,
-                pythia8CP5SettingsBlock,
-                processParameters = cms.vstring(
-                    'SoftQCD:nonDiffractive = on',
-                    'SoftQCD:singleDiffractive = on',
-                    'SoftQCD:doubleDiffractive = on',
-                ),
-                parameterSets = cms.vstring(
-                    'pythia8CommonSettings',
-                    'pythia8CP5Settings',
-                    'processParameters',
-                )
+    process.generator = cms.EDFilter(
+        "Pythia8GeneratorFilter",
+        maxEventsToPrint = cms.untracked.int32(1),
+        pythiaPylistVerbosity = cms.untracked.int32(1),
+        filterEfficiency = cms.untracked.double(1.0),
+        pythiaHepMCVerbosity = cms.untracked.bool(False),
+        comEnergy = cms.double(14000.),
+        PythiaParameters = cms.PSet(
+            pythia8CommonSettingsBlock,
+            pythia8CP5SettingsBlock,
+            processParameters = processParameters,
+            parameterSets = cms.vstring(
+                'pythia8CommonSettings',
+                'pythia8CP5Settings',
+                'processParameters',
             )
         )
-
-    # H->gg
-    # adjust e.g. from https://github.com/cms-sw/genproductions/blob/master/python/ThirteenTeV/Higgs/SMHiggsToTauTau_13TeV-powheg_pythia8_cff.py
-    if proc=='hgg':
-        process.generator = cms.EDFilter(
-            "Pythia8GeneratorFilter",
-            maxEventsToPrint = cms.untracked.int32(1),
-            pythiaPylistVerbosity = cms.untracked.int32(1),
-            filterEfficiency = cms.untracked.double(1.0),
-            pythiaHepMCVerbosity = cms.untracked.bool(False),
-            comEnergy = cms.double(14000.0),
-            PythiaParameters = cms.PSet(
-                pythia8CommonSettingsBlock,
-                pythia8CP5SettingsBlock,
-                processParameters = cms.vstring(
-                    'Main:timesAllowErrors    = 10000',
-                    'HiggsSM:all=true',
-                    '25:m0 = 125.0',
-                    '25:onMode = off',
-                    '25:onIfMatch = 22 22'
-                ),
-                parameterSets = cms.vstring(
-                    'pythia8CommonSettings',
-                    'pythia8CP5Settings',
-                    'processParameters'
-                )
-            )
-        )
-
-    # W->qq'
-    # adjust e.g. from https://github.com/cms-sw/genproductions/blob/master/python/ThirteenTeV/WToMuNu_M_1000_TuneCUETP8M1_13TeV_pythia8_cfi.py
-    if proc=='wqq':
-        process.generator = cms.EDFilter(
-            "Pythia8GeneratorFilter",
-            maxEventsToPrint = cms.untracked.int32(0),
-            pythiaPylistVerbosity = cms.untracked.int32(1),
-            filterEfficiency = cms.untracked.double(1.),
-            pythiaHepMCVerbosity = cms.untracked.bool(False),
-            comEnergy = cms.double(14000.0),
-            PythiaParameters = cms.PSet(
-                pythia8CommonSettingsBlock,
-                pythia8CP5SettingsBlock,
-                processParameters = cms.vstring(
-                    'WeakSingleBoson:ffbar2W = on',
-                    '24:onMode = off',
-                    '24:onIfAny = 1,2,3,4',
-                ),
-                parameterSets = cms.vstring(
-                    'pythia8CommonSettings',
-                    'pythia8CP5Settings',
-                    'processParameters'
-                )
-            )
-        )
-
-    #ttbar
-    if proc=='ttbar':
-        process.generator = cms.EDFilter(
-            "Pythia8GeneratorFilter",
-            maxEventsToPrint = cms.untracked.int32(0),
-            pythiaPylistVerbosity = cms.untracked.int32(1),
-            filterEfficiency = cms.untracked.double(1.),
-            pythiaHepMCVerbosity = cms.untracked.bool(False),
-            comEnergy = cms.double(14000.0),
-                PythiaParameters = cms.PSet(
-                    pythia8CommonSettingsBlock,
-                    pythia8CP5SettingsBlock,
-                    processParameters = cms.vstring(
-                        'Top:gg2ttbar    = on',
-                        'Top:qqbar2ttbar = on',
-                        '6:m0 = 172.5',  # top mass'
-                    ),
-                    parameterSets = cms.vstring(
-                        'pythia8CommonSettings',
-                        'pythia8CUEP8M1Settings',
-                        'processParameters',
-                    )
-                )
-            )
+    )
 
 
 def defineJetBasedBias(process,jetColl="ak8GenJetsNoNu",thr=100,minObj=1):
