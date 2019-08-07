@@ -25,12 +25,10 @@ def parseOptions():
     parser.add_option('-c', '--cfg',    dest='CONFIGFILE', type='string', default='',help='CMSSW config template name, if empty string the deafult one will be used')
     parser.add_option('-p', '--partID', dest='PARTID', type='string',     default='', help='string of particle PDG IDs separated by comma, if empty string - run on all supported (11,12,13,14,15,16,22,111,211,130) and corresponding negative values, default is empty string (all)')
     parser.add_option('', '--nPart',  dest='NPART',  type=int,   default=1,      help='number of times particles of type(s) PARTID will be generated per event, default is 1')
-    parser.add_option('', '--thresholdMin',  dest='thresholdMin',  type=float, default=1.0,     help='min. threshold value')
-    parser.add_option('', '--thresholdMax',  dest='thresholdMax',  type=float, default=35.0,    help='max. threshold value')
+    parser.add_option('', '--thresholdMin',  dest='thresholdMin',  type=float, default=1.0,     help='min. threshold value, used as min. pt phase space cut for physproc gunmode when >= 0')
+    parser.add_option('', '--thresholdMax',  dest='thresholdMax',  type=float, default=35.0,    help='max. threshold value, used as max. pt phase space cut for physproc gunmode when >= 0')
     parser.add_option('', '--etaMin',  dest='etaMin',  type=float, default=1.479,  help='min. eta value')
     parser.add_option('', '--etaMax',  dest='etaMax',  type=float, default=3.0,    help='max. eta value')
-    parser.add_option('', '--ptMin',  dest='ptMin',  type=float, default=-1.0, help='min. pt value, ignored when < 0, only used for physproc gun mode as phase space cut')
-    parser.add_option('', '--ptMax',  dest='ptMax',  type=float, default=-1.0, help='max. pt value, ignored when < 0, only used for physproc gun mode as phase space cut')
     parser.add_option('', '--zMin',  dest='zMin',  type=float, default=321.6,  help='min. z value start of EE at V10')
     parser.add_option('', '--zMax',  dest='zMax',  type=float, default=650.0,    help='max. z value')
     parser.add_option('', '--rMin',  dest='rMin',  type=float, default=0.0,  help='min. r value')
@@ -364,9 +362,6 @@ def submitHGCalProduction():
                 if opt.gunMode != 'physproc':
                     s_template=s_template.replace('MAXTHRESHSTRING',"Max"+str(opt.gunType))
                     s_template=s_template.replace('MINTHRESHSTRING',"Min"+str(opt.gunType))
-                else:
-                    s_template=s_template.replace('DUMMYTHRESHMIN', str(opt.ptMin))
-                    s_template=s_template.replace('DUMMYTHRESHMAX', str(opt.ptMax))
                 s_template=s_template.replace('GUNMODE',str(opt.gunMode))
                 if opt.gunMode == 'closeby':
                     s_template=s_template.replace('DUMMYZMIN',str(opt.zMin))

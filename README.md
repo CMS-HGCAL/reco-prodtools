@@ -185,8 +185,10 @@ which in this case means at least two jets with pT > 100 GeV in the `ak8GenJetsN
 
 A more efficient way to apply phase space cuts is to directly configure Pythia8 via process parameters. Currently supported cuts:
 
-* `PhaseSpace:pTHatMin`: set via `--ptMin`, ignored when negative.
-* `PhaseSpace:pTHatMax`: set via `--ptMax`, ignored when negative.
+* `PhaseSpace:pTHatMin`: set via `--thresholdMin`, ignored when negative.
+* `PhaseSpace:pTHatMax`: set via `--thresholdMax`, ignored when negative.
+
+**Note** that both `--threshold*` parameters have positive default values.
 
 ### RECO step
 
