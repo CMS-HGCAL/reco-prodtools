@@ -86,7 +86,7 @@ To produce `NEVENTS` GEN-SIM-DIGI events with `NPART` sets of particles (per eve
   --tag MYTAG
 ```
 
-Here, one can produce a custom set of particles by providing `PART_PDGID` as a set of comma-separated single PDG IDs. To simulate the decay of unstable particles, e.g. quarks, gluons or taus,  an alternative particle gun based on PYTHIA8 can be used by setting `--gunMode pythia8`.
+Here, one can produce a custom set of particles by providing `PART_PDGID` as a set of comma-separated single PDG IDs. To simulate the decay of unstable particles, e.g. quarks, gluons or taus,  an alternative particle gun based on Pythia8 can be used by setting `--gunMode pythia8`. The Pythia8 gun can also be either a 'Pt' or 'E' gun.
 
 To produce `NEVENTS` GEN-SIM-DIGI events with pair of particles within given angular distance ΔR(η,φ) (per event), where the first particle is of type `PART_PDGID` and in the p_T range from `PTMIN` to `PTMAX`, and the second one is of type `INCONE_PART_PDGID` and at distance from `DRMIN` to `DRMAX` and with p_T in range from `PTRATIO_MIN` to `PTRATIO_MAX` relative to the first particle, one should run:
 
