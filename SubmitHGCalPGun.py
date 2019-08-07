@@ -364,6 +364,7 @@ def submitHGCalProduction():
                 if opt.gunMode != 'physproc':
                     s_template=s_template.replace('MAXTHRESHSTRING',"Max"+str(opt.gunType))
                     s_template=s_template.replace('MINTHRESHSTRING',"Min"+str(opt.gunType))
+                else:
                     s_template=s_template.replace('DUMMYTHRESHMIN', str(opt.ptMin))
                     s_template=s_template.replace('DUMMYTHRESHMAX', str(opt.ptMax))
                 s_template=s_template.replace('GUNMODE',str(opt.gunMode))
