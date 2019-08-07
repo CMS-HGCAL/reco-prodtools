@@ -188,8 +188,6 @@ A more efficient way to apply phase space cuts is to directly configure Pythia8 
 * `PhaseSpace:pTHatMin`: set via `--thresholdMin`, ignored when negative.
 * `PhaseSpace:pTHatMax`: set via `--thresholdMax`, ignored when negative.
 
-**Note** that both `--threshold*` parameters have positive default values.
-
 ### RECO step
 
 To run RECO stage on the produced GEN-SIM-DIGI samples, stored under `partGun_[MYTAG]_[DATE]` (locally or on the CMG EOS area), one should run:
