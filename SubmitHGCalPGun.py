@@ -202,7 +202,7 @@ def submitHGCalProduction():
     partGunType = 'FlatRandom%sGunProducer' % opt.gunType
     if opt.gunMode == 'pythia8':
         partGunType = 'Pythia8%sGun' % opt.gunType
-    if 'physproc' in opt.gunMode:
+    if opt.gunMode == 'physproc':
         partGunType = opt.gunType
     if opt.InConeID != '':
         partGunType = 'MultiParticleInConeGunProducer'  # change part gun type if needed, keep opt.gunType unchanged (E or Pt) for the "primary particle"
@@ -273,7 +273,7 @@ def submitHGCalProduction():
     else:
         processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/'+opt.DTIER+'/');
         recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+outDir+'/'+previousDataTier+'/'
-        if (opt.DQM): processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/DQM/');
+        if (opt.DQM): processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/DQM/')
     # in case of relval always take reconInput from /store...
     if DASquery: recoInputPrefix=''
 
@@ -328,7 +328,7 @@ def submitHGCalProduction():
             # prepare the out file and cfg file by replacing DUMMY entries according to input options
             if DASquery:
                 basename=outDir+'_'+opt.DTIER+'_'+str(job)
-            elif 'physproc' in opt.gunMode:
+            elif opt.gunMode == 'physproc':
                 basename='physproc_'+'_'.join(opt.gunType.split(':'))+'_'+opt.DTIER+'_'+str(job)
             else:
                 basename = commonFileNamePrefix + '_PDGid'+"_id".join(sParticle)+'_x'+str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD'])+'_' + opt.gunType+str(opt.thresholdMin)+'To'+str(opt.thresholdMax)+'_'+opt.DTIER+'_'+str(job)
