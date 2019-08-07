@@ -43,7 +43,7 @@ def defineProcessGenerator(process,proc='minbias'):
             '6:m0 = 172.5',  # top mass'
         )
     else:
-        raise ValueError('Process \"%s\" not defined.'.format(proc))
+        raise ValueError('Process \"{}\" not defined.'.format(proc))
 
     process.generator = cms.EDFilter(
         "Pythia8GeneratorFilter",
