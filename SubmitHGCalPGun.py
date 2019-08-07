@@ -29,6 +29,8 @@ def parseOptions():
     parser.add_option('', '--thresholdMax',  dest='thresholdMax',  type=float, default=35.0,    help='max. threshold value')
     parser.add_option('', '--etaMin',  dest='etaMin',  type=float, default=1.479,  help='min. eta value')
     parser.add_option('', '--etaMax',  dest='etaMax',  type=float, default=3.0,    help='max. eta value')
+    parser.add_option('', '--ptMin',  dest='ptMin',  type=float, default=-1.0, help='min. pt value, ignored when < 0, only used for physproc gun mode as phase space cut')
+    parser.add_option('', '--ptMax',  dest='ptMax',  type=float, default=-1.0, help='max. pt value, ignored when < 0, only used for physproc gun mode as phase space cut')
     parser.add_option('', '--zMin',  dest='zMin',  type=float, default=321.6,  help='min. z value start of EE at V10')
     parser.add_option('', '--zMax',  dest='zMax',  type=float, default=650.0,    help='max. z value')
     parser.add_option('', '--rMin',  dest='rMin',  type=float, default=0.0,  help='min. r value')
@@ -362,6 +364,8 @@ def submitHGCalProduction():
                 if opt.gunMode != 'physproc':
                     s_template=s_template.replace('MAXTHRESHSTRING',"Max"+str(opt.gunType))
                     s_template=s_template.replace('MINTHRESHSTRING',"Min"+str(opt.gunType))
+                    s_template=s_template.replace('DUMMYTHRESHMIN', str(opt.ptMin))
+                    s_template=s_template.replace('DUMMYTHRESHMAX', str(opt.ptMax))
                 s_template=s_template.replace('GUNMODE',str(opt.gunMode))
                 if opt.gunMode == 'closeby':
                     s_template=s_template.replace('DUMMYZMIN',str(opt.zMin))

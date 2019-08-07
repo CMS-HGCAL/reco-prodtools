@@ -85,11 +85,15 @@ elif gunmode == 'physproc':
     proc_cfg = physicsProcess.split(':')
     proc = proc_cfg[0]
 
+    # phase space cuts
+    ptMin = DUMMYTHRESHMIN
+    ptMax = DUMMYTHRESHMAX
+
     from reco_prodtools.templates.hgcBiasedGenProcesses_cfi import *
 
     #define the process
     print 'Setting process to', proc
-    defineProcessGenerator(process, proc=proc)
+    defineProcessGenerator(process, proc=proc, ptMin=ptMin, ptMax=ptMax)
 
     #set a filter path if it's available
     if len(proc_cfg)==4:

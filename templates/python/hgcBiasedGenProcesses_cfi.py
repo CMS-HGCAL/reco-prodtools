@@ -3,8 +3,7 @@ from Configuration.Generator.Pythia8CommonSettings_cfi import *
 from Configuration.Generator.MCTunes2017.PythiaCP5Settings_cfi import *
 
 
-def defineProcessGenerator(process,proc='minbias'):
-
+def defineProcessGenerator(process, proc='minbias', ptMin=-1., ptMax=-1.):
     """
     wraps up a couple of interesting processes for HGCal studies
     - minbias (minimum bias),
@@ -42,8 +41,18 @@ def defineProcessGenerator(process,proc='minbias'):
             'Top:qqbar2ttbar = on',
             '6:m0 = 172.5',  # top mass'
         )
+    elif proc == 'qcd':
+        processParameters = cms.vstring(
+            'HardQCD:all = on',
+        )
     else:
         raise ValueError('Process \"{}\" not defined.'.format(proc))
+
+    # extend by common phase space cuts
+    if ptMin >= 0:
+        processParameters.append('PhaseSpace:pTHatMin = {}'.format(ptMin))
+    if ptMax >= 0:
+        processParameters.append('PhaseSpace:pTHatMax = {}'.format(ptMax))
 
     process.generator = cms.EDFilter(
         "Pythia8GeneratorFilter",
