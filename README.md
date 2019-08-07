@@ -183,7 +183,7 @@ In addition to setting the physics process only, you can add a filter path to ha
 
 which in this case means at least two jets with pT > 100 GeV in the `ak8GenJetsNoNu` collection.
 
-A more efficient way to apply phase space cuts is to directly configure Pythia via process parameters. Currently supported cuts:
+A more efficient way to apply phase space cuts is to directly configure Pythia8 via process parameters. Currently supported cuts:
 
 * `PhaseSpace:pTHatMin`: set via `--ptMin`, ignored when negative.
 * `PhaseSpace:pTHatMax`: set via `--ptMax`, ignored when negative.
