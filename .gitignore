@@ -1,5 +1,3 @@
+*.pyc
 templates/python/__init__.py
-templates/python/__init__.pyc
-
 templates/python/*_fragment.py
-templates/python/*_fragment.pyc
