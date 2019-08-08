@@ -10,9 +10,7 @@ import re
 
 eosExec = 'eos'
 
-### parsing input options
-def parseOptions():
-
+def createParser():
     usage = ('usage: %prog [options]\n'
              + '%prog -h for help')
     parser = optparse.OptionParser(usage)
@@ -50,6 +48,7 @@ def parseOptions():
     parser.add_option('', '--eosArea', dest='eosArea', type='string', default='/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production', help='path to the eos area where the output jobs will be staged out')
     parser.add_option('-d', '--datTier', dest='DTIER',  type='string', default='GSD', help='data tier to run: "GSD" (GEN-SIM-DIGI) or "RECO", default is "GSD"')
     parser.add_option('-i', '--inDir',  dest='inDir',  type='string', default='',   help='name of the previous stage dir (relative to the local submission or "eosArea"), to be used as the input for next stage, not applicable for GEN stage')
+    parser.add_option('-o', '--outDir',  dest='outDir',  type='string', default='',   help='name of the output directory, the default value depends on the data tier and handles duplicate collisions')
     parser.add_option('-r', '--RelVal',  dest='RELVAL',  type='string', default='',   help='name of relval reco dataset to be ntuplized (currently implemented only for NTUP data Tier')
     parser.add_option('', '--noReClust',  action='store_false', dest='RECLUST',  default=True, help='do not re-run RECO-level clustering at NTUP step, default is True (do re-run the clustering).')
     parser.add_option('', '--addGenOrigin',    action='store_true', dest='ADDGENORIG',  default=False, help='add coordinates of the origin vertex for gen particles as well as the mother particle index')
@@ -58,10 +57,14 @@ def parseOptions():
     parser.add_option('', '--multiClusterTag',  action='store', dest='MULTICLUSTAG', default="hgcalMultiClusters", help='name of HGCalMultiCluster InputTag - use hgcalLayerClusters before CMSSW_10_3_X')
     parser.add_option('', '--keepDQMfile',  action='store_true', dest='DQM',  default=False, help='store the DQM file in relevant folder locally or in EOS, default is False.')
 
+    return parser
 
-    # store options and arguments as global variables
-    global opt, args
-    (opt, args) = parser.parse_args()
+
+### parsing input options
+def parseOptions(opt=None):
+    if not opt:
+        parser = createParser()
+        opt, _ = parser.parse_args()
 
     # sanity check for data tiers
     dataTiers = ['GSD', 'RECO', 'NTUP']
@@ -105,7 +108,7 @@ def parseOptions():
     if not (set(inPartID) < set(particles) or opt.PARTID == ''):
         parser.error('Particle(s) with ID(s) ' + opt.PARTID + ' is not supported. Exiting...')
         sys.exit()
-    if 'physproc' in opt.gunMode:
+    if opt.gunMode == 'physproc':
         particles=['0']
 
     # sanity check for generation of particle within the cone (require to be compatibe with NPART==1, gunType==Pt and supported particles)
@@ -124,6 +127,8 @@ def parseOptions():
     if opt.RELVAL != '':
         particles = ['dummy']
 
+    return opt
+
 
 ### processing the external os commands
 def processCmd(cmd, quite = 0):
@@ -135,8 +140,7 @@ def processCmd(cmd, quite = 0):
     return output
 
 ### print the setup
-def printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
-    global opt, particles
+def printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     print '--------------------'
     print '[Run parameters]'
     print '--------------------'
@@ -187,11 +191,8 @@ def getInputFileList(DASquery,inPath, inSubDir, local, pattern):
     return inputList
 
 ### submission of GSD/RECO production
-def submitHGCalProduction():
-
-    # parse the arguments and options
-    global opt, args, particles
-    parseOptions()
+def submitHGCalProduction(opt=None):
+    opt = parseOptions(opt=opt)
 
     # save working dir
     currentDir = os.getcwd()
@@ -245,7 +246,9 @@ def submitHGCalProduction():
 
     # prepare tag, prepare/check out dirs
     tag = "_".join([opt.TAG, time.strftime("%Y%m%d")])
-    if (opt.DTIER == 'GSD'):
+    if opt.outDir:
+        outDir = opt.outDir
+    elif (opt.DTIER == 'GSD'):
         outDir = "_".join([partGunType, tag]).replace(":", "_")
         if (not os.path.isdir(outDir)):
             processCmd('mkdir -p '+outDir+'/cfg/')
@@ -270,7 +273,7 @@ def submitHGCalProduction():
         processCmd('mkdir -p '+outDir+'/'+opt.DTIER+'/')
         recoInputPrefix = 'file:'+currentDir+'/'+outDir+'/'+previousDataTier+'/'
         if (opt.DQM): processCmd('mkdir -p '+outDir+'/DQM/')
-    else:
+    elif opt.eosArea:
         processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/'+opt.DTIER+'/');
         recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+outDir+'/'+previousDataTier+'/'
         if (opt.DQM): processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/DQM/')
@@ -286,7 +289,7 @@ def submitHGCalProduction():
         if DASquery: inPath=opt.RELVAL
 
     # print out some info
-    printSetup(CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir)
+    printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir)
 
     # submit all the jobs
     print '[Submitting jobs]'
@@ -296,6 +299,8 @@ def submitHGCalProduction():
     f_template= open(opt.CONFIGFILE, 'r')
     template= f_template.read()
     f_template.close()
+
+    created_cfgs = []
 
     for particle in particles:
         nFilesPerJob = 0
@@ -394,8 +399,8 @@ def submitHGCalProduction():
 
             # submit job
             # now write the file from the s_template
-
-            write_template= open(outDir+'/cfg/'+cfgfile, 'w')
+            cfgfile_path = outDir + '/cfg/' + cfgfile
+            write_template= open(cfgfile_path, 'w')
             write_template.write(s_template)
             write_template.close()
 
@@ -426,10 +431,12 @@ def submitHGCalProduction():
                     if ('error' not in output):
                         print 'Submitted after retry - job '+str(jobCount+1)
 
-
             jobCount += 1
+            created_cfgs.append(cfgfile_path)
 
     print '[Submitted '+str(jobCount)+' jobs]'
+
+    return created_cfgs
 
 ### run the submitHGCalProduction() as main
 if __name__ == "__main__":
