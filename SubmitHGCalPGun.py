@@ -61,9 +61,10 @@ def createParser():
 
 
 ### parsing input options
-def parseOptions(opt=None):
-    if not opt:
+def parseOptions(parser=None, opt=None):
+    if not parser:
         parser = createParser()
+    if not opt:
         opt, _ = parser.parse_args()
 
     # sanity check for data tiers
@@ -184,8 +185,8 @@ def getInputFileList(DASquery,inPath, inSubDir, local, pattern):
     return inputList
 
 ### submission of GSD/RECO production
-def submitHGCalProduction(opt=None):
-    opt = parseOptions(opt=opt)
+def submitHGCalProduction(*args, **kwargs):
+    opt = parseOptions(*args, **kwargs)
 
     # save working dir
     currentDir = os.getcwd()
