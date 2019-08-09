@@ -21,7 +21,7 @@ def createParser():
     parser.add_option('-n', '--nevts',  dest='NEVTS',  type=int,       default=100,  help='total number of events, applicable to runs with GEN stage, default is 100')
     parser.add_option('-e', '--evtsperjob', dest='EVTSPERJOB', type=int, default=-1,   help='number of events per job, if set to -1 it will set to a recommended value (GSD: 4events/1nh, RECO:8events/1nh), default is -1')
     parser.add_option('-c', '--cfg',    dest='CONFIGFILE', type='string', default='',help='CMSSW config template name, if empty string the deafult one will be used')
-    parser.add_option('-p', '--partID', dest='PARTID', type='string',     default='', help='string of particle PDG IDs separated by comma, if empty string - run on all supported (11,12,13,14,15,16,22,111,211,130) and corresponding negative values, default is empty string (all)')
+    parser.add_option('-p', '--partID', dest='PARTID', type='string',     default='', help='string of particles\' PDG IDs to shoot, separated by comma')
     parser.add_option('', '--nPart',  dest='NPART',  type=int,   default=1,      help='number of times particles of type(s) PARTID will be generated per event, default is 1')
     parser.add_option('', '--thresholdMin',  dest='thresholdMin',  type=float, default=-1.0, help='min. threshold value, used as min. pt phase space cut for physproc gunmode when >= 0')
     parser.add_option('', '--thresholdMax',  dest='thresholdMax',  type=float, default=-1.0, help='max. threshold value, used as max. pt phase space cut for physproc gunmode when >= 0')
@@ -102,14 +102,11 @@ def parseOptions(opt=None):
             opt.EVTSPERJOB = queues_evtsperjob[opt.QUEUE] # set the recommnded number of events per job, if requested
 
     # list of supported particles, check if requested partID list is a subset of the list of the supported ones
-    global particles
     particles = ['22', '111', '211', '-211', '11', '-11', '13', '-13', '15', '-15', '12', '14', '16', '130', '1', '-1', '2', '-2', '3', '-3', '4', '-4', '5', '-5', '21']
     inPartID = [p.strip(" ") for p in opt.PARTID.split(",")] # prepare list of requested IDs (split by ",", strip white spaces)
     if not (set(inPartID) < set(particles) or opt.PARTID == ''):
         parser.error('Particle(s) with ID(s) ' + opt.PARTID + ' is not supported. Exiting...')
         sys.exit()
-    if opt.gunMode == 'physproc':
-        particles=['0']
 
     # sanity check for generation of particle within the cone (require to be compatibe with NPART==1, gunType==Pt and supported particles)
     if (opt.InConeID != '') and (opt.InConeID not in particles):
@@ -118,10 +115,6 @@ def parseOptions(opt=None):
     if (opt.InConeID != '') and (opt.NPART != 1 or opt.gunType != 'Pt'):
         parser.error('In-cone multi-particle gun is incompatible with options NPART = {} (must be 1) or with gunType = {} (gun-type must be Pt). Exiting...'.format(opt.NPART, opt.gunType))
         sys.exit()
-
-    if not (opt.PARTID == ''):
-        particles = []
-        particles.append(opt.PARTID)
 
     # overwrite for RelVal
     if opt.RELVAL != '':
@@ -156,7 +149,7 @@ def printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     if opt.gunMode == 'physproc':
         print 'INPUTS:     ', [curr_input, 'Physics process config: ' + ' '.join(opt.gunMode.split(':')),opt.RELVAL][int(opt.DTIER=='GSD')]
     else:
-        print 'INPUTS:     ', [curr_input, 'Particle gun mode: ' + opt.gunMode + ', type: ' + opt.gunType + ', PDG ID '+str(opt.PARTID)+', '+str(opt.NPART)+' times per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+'], eta threshold in ['+str(opt.etaMin)+','+str(opt.etaMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
+        print 'INPUTS:     ', [curr_input, 'Particle gun mode: ' + opt.gunMode + ', type: ' + opt.gunType + ', PDG ID(s) '+str(opt.PARTID)+', '+str(opt.NPART)+' times per event, ' + opt.gunType + ' threshold in ['+str(opt.thresholdMin)+','+str(opt.thresholdMax)+'], eta threshold in ['+str(opt.etaMin)+','+str(opt.etaMax)+']',opt.RELVAL][int(opt.DTIER=='GSD')]
     if (opt.InConeID!='' and opt.DTIER=='GSD'):
         print '             IN-CONE: PDG ID '+str(opt.InConeID)+', deltaR in ['+str(opt.MinDeltaR)+ ','+str(opt.MaxDeltaR)+']'+', momentum ratio in ['+str(opt.MinMomRatio)+ ','+str(opt.MaxMomRatio)+']'
     if (opt.gunMode == 'closeby' and opt.DTIER=='GSD'):
@@ -302,137 +295,137 @@ def submitHGCalProduction(opt=None):
 
     created_cfgs = []
 
-    for particle in particles:
-        nFilesPerJob = 0
-        eventsPerPrevJob = 0
-        sParticle = [p.strip(" ") for p in particle.split(",")] # prepare a list of particle strings without white spaces
-        # in case of 'RECO' or 'NTUP', get the input file list for given particle, determine number of jobs, get also basic GSD/RECO info
-        if (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
-            inputFilesList = getInputFileList(DASquery,inPath, previousDataTier, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+"_id".join(sParticle)+'_*.root')
-            if len(inputFilesList) == 0:
-                continue
-            # build regular expression for splitting (NOTE: none of this is used for relval!)
-            if not DASquery:
-                regex = re.compile(ur"partGun_PDGid[0-9]*[_id[0-9]*]*_x([0-9]*)_(E|Pt)([0-9]*[.]?[0-9]*)To([0-9]*[.]?[0-9]*)_.*\.root")
-                matches = regex.match(inputFilesList[0])
-                eventsPerPrevJob = int(matches.group(1))
-                opt.gunType = matches.group(2)
-                opt.thresholdMin = float(matches.group(3))
-                opt.thresholdMax = float(matches.group(4))
-                nFilesPerJob = max(int(math.floor(float(min(opt.EVTSPERJOB, len(inputFilesList)*eventsPerPrevJob))/float(eventsPerPrevJob))),1)
-                njobs = int(math.ceil(float(len(inputFilesList))/float(nFilesPerJob)))
-            else:
-                njobs=len(inputFilesList)
-                nFilesPerJob = 1
+    nFilesPerJob = 0
+    eventsPerPrevJob = 0
+    sParticle = [p.strip(" ") for p in opt.PARTID.split(",")]  # prepare a list of particle strings without white spaces
+    # in case of 'RECO' or 'NTUP', get the input file list for given particle, determine number of jobs, get also basic GSD/RECO info
+    if (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
+        inputFilesList = getInputFileList(DASquery,inPath, previousDataTier, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+"_id".join(sParticle)+'_*.root')
+        if len(inputFilesList) == 0:
+            print 'Empty list of input files!'
+            return created_cfgs
+        # build regular expression for splitting (NOTE: none of this is used for relval!)
+        if not DASquery:
+            regex = re.compile(ur"partGun_PDGid[0-9]*[_id[0-9]*]*_x([0-9]*)_(E|Pt)([0-9]*[.]?[0-9]*)To([0-9]*[.]?[0-9]*)_.*\.root")
+            matches = regex.match(inputFilesList[0])
+            eventsPerPrevJob = int(matches.group(1))
+            opt.gunType = matches.group(2)
+            opt.thresholdMin = float(matches.group(3))
+            opt.thresholdMax = float(matches.group(4))
+            nFilesPerJob = max(int(math.floor(float(min(opt.EVTSPERJOB, len(inputFilesList)*eventsPerPrevJob))/float(eventsPerPrevJob))),1)
+            njobs = int(math.ceil(float(len(inputFilesList))/float(nFilesPerJob)))
+        else:
+            njobs=len(inputFilesList)
+            nFilesPerJob = 1
 
-        for job in range(1,int(njobs)+1):
-            submittxt=' for particle ID '+particle
-            if DASquery : submittxt=' for RelVal:'+opt.RELVAL
-            print 'Submitting job '+str(job)+' out of '+str(njobs)+submittxt
+    for job in range(1,int(njobs)+1):
+        submittxt = ' for particle ID(s) ' + opt.PARTID
+        if DASquery : submittxt=' for RelVal:'+opt.RELVAL
+        print 'Submitting job ' + str(job) + ' out of ' + str(njobs) + submittxt
 
-            # prepare the out file and cfg file by replacing DUMMY entries according to input options
-            if DASquery:
-                basename=outDir+'_'+opt.DTIER+'_'+str(job)
-            elif opt.gunMode == 'physproc':
-                basename='physproc_'+'_'.join(opt.gunType.split(':'))+'_'+opt.DTIER+'_'+str(job)
-            else:
-                basename = commonFileNamePrefix + '_PDGid'+"_id".join(sParticle)+'_x'+str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD'])+'_' + opt.gunType+str(opt.thresholdMin)+'To'+str(opt.thresholdMax)+'_'+opt.DTIER+'_'+str(job)
+        # prepare the out file and cfg file by replacing DUMMY entries according to input options
+        if DASquery:
+            basename=outDir+'_'+opt.DTIER+'_'+str(job)
+        elif opt.gunMode == 'physproc':
+            basename='physproc_'+'_'.join(opt.gunType.split(':'))+'_'+opt.DTIER+'_'+str(job)
+        else:
+            basename = commonFileNamePrefix + '_PDGid'+"_id".join(sParticle)+'_x'+str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD'])+'_' + opt.gunType+str(opt.thresholdMin)+'To'+str(opt.thresholdMax)+'_'+opt.DTIER+'_'+str(job)
 
-            cfgfile = basename +'.py'
-            outfile = basename +'.root'
-            outdqmfile = basename.replace(opt.DTIER, 'DQM') +'.root'
-            jobfile = basename +'.sub'
+        cfgfile = basename +'.py'
+        outfile = basename +'.root'
+        outdqmfile = basename.replace(opt.DTIER, 'DQM') +'.root'
+        jobfile = basename +'.sub'
 
-            s_template=template
+        s_template=template
 
-            s_template=s_template.replace('DUMMYFILENAME',outfile)
-            s_template=s_template.replace('DUMMYDQMFILENAME',outdqmfile)
-            s_template=s_template.replace('DUMMYSEED',str(job))
+        s_template=s_template.replace('DUMMYFILENAME',outfile)
+        s_template=s_template.replace('DUMMYDQMFILENAME',outdqmfile)
+        s_template=s_template.replace('DUMMYSEED',str(job))
 
-            if (opt.DTIER == 'GSD'):
-                # in case of InCone generation of particles
-                if opt.InConeID != '':
-                    s_template=s_template.replace('#DUMMYINCONESECTION',InConeSECTION)
+        if (opt.DTIER == 'GSD'):
+            # in case of InCone generation of particles
+            if opt.InConeID != '':
+                s_template=s_template.replace('#DUMMYINCONESECTION',InConeSECTION)
 
-                # prepare GEN-SIM-DIGI inputs
-                nParticles = ','.join([particle for i in range(0,opt.NPART)])
-                s_template=s_template.replace('DUMMYEVTSPERJOB',str(opt.EVTSPERJOB))
+            # prepare GEN-SIM-DIGI inputs
+            nParticles = ','.join([opt.PARTID for i in range(0,opt.NPART)])
+            s_template=s_template.replace('DUMMYEVTSPERJOB',str(opt.EVTSPERJOB))
 
-                s_template=s_template.replace('DUMMYIDs',nParticles)
-                s_template=s_template.replace('DUMMYTHRESHMIN',str(opt.thresholdMin))
-                s_template=s_template.replace('DUMMYTHRESHMAX',str(opt.thresholdMax if opt.thresholdMax >= 0 else opt.thresholdMin))
-                s_template=s_template.replace('DUMMYETAMIN',str(opt.etaMin))
-                s_template=s_template.replace('DUMMYETAMAX',str(opt.etaMax))
-                s_template=s_template.replace('GUNPRODUCERTYPE',str(partGunType))
-                if opt.gunMode != 'physproc':
-                    s_template=s_template.replace('MAXTHRESHSTRING',"Max"+str(opt.gunType))
-                    s_template=s_template.replace('MINTHRESHSTRING',"Min"+str(opt.gunType))
-                s_template=s_template.replace('GUNMODE',str(opt.gunMode))
-                if opt.gunMode == 'closeby':
-                    s_template=s_template.replace('DUMMYZMIN',str(opt.zMin))
-                    s_template=s_template.replace('DUMMYZMAX',str(opt.zMax))
-                    s_template=s_template.replace('DUMMYDELTA',str(opt.Delta))
-                    s_template=s_template.replace('DUMMYRMIN',str(opt.rMin))
-                    s_template=s_template.replace('DUMMYRMAX',str(opt.rMax))
-                    s_template=s_template.replace('DUMMYPOINTING',str(opt.pointing))
-                    s_template=s_template.replace('DUMMYOVERLAPPING',str(opt.overlapping))
-                    s_template=s_template.replace('DUMMYRANDOMSHOOT',str(opt.randomShoot))
-                    s_template=s_template.replace('DUMMYNRANDOMPARTICLES',str(opt.NRANDOMPART))
-
-
-            elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
-                # prepare RECO inputs
-                inputFilesListPerJob = inputFilesList[(job-1)*nFilesPerJob:(job)*nFilesPerJob]
-                if len(inputFilesListPerJob)==0: continue
-                inputFiles = '"' + '", "'.join([recoInputPrefix+str(f) for f in inputFilesListPerJob]) + '"'
-                s_template=s_template.replace('DUMMYINPUTFILELIST',inputFiles)
-                s_template=s_template.replace('DUMMYEVTSPERJOB',str(-1))
+            s_template=s_template.replace('DUMMYIDs',nParticles)
+            s_template=s_template.replace('DUMMYTHRESHMIN',str(opt.thresholdMin))
+            s_template=s_template.replace('DUMMYTHRESHMAX',str(opt.thresholdMax if opt.thresholdMax >= 0 else opt.thresholdMin))
+            s_template=s_template.replace('DUMMYETAMIN',str(opt.etaMin))
+            s_template=s_template.replace('DUMMYETAMAX',str(opt.etaMax))
+            s_template=s_template.replace('GUNPRODUCERTYPE',str(partGunType))
+            if opt.gunMode != 'physproc':
+                s_template=s_template.replace('MAXTHRESHSTRING',"Max"+str(opt.gunType))
+                s_template=s_template.replace('MINTHRESHSTRING',"Min"+str(opt.gunType))
+            s_template=s_template.replace('GUNMODE',str(opt.gunMode))
+            if opt.gunMode == 'closeby':
+                s_template=s_template.replace('DUMMYZMIN',str(opt.zMin))
+                s_template=s_template.replace('DUMMYZMAX',str(opt.zMax))
+                s_template=s_template.replace('DUMMYDELTA',str(opt.Delta))
+                s_template=s_template.replace('DUMMYRMIN',str(opt.rMin))
+                s_template=s_template.replace('DUMMYRMAX',str(opt.rMax))
+                s_template=s_template.replace('DUMMYPOINTING',str(opt.pointing))
+                s_template=s_template.replace('DUMMYOVERLAPPING',str(opt.overlapping))
+                s_template=s_template.replace('DUMMYRANDOMSHOOT',str(opt.randomShoot))
+                s_template=s_template.replace('DUMMYNRANDOMPARTICLES',str(opt.NRANDOMPART))
 
 
+        elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
+            # prepare RECO inputs
+            inputFilesListPerJob = inputFilesList[(job-1)*nFilesPerJob:(job)*nFilesPerJob]
+            if len(inputFilesListPerJob)==0: continue
+            inputFiles = '"' + '", "'.join([recoInputPrefix+str(f) for f in inputFilesListPerJob]) + '"'
+            s_template=s_template.replace('DUMMYINPUTFILELIST',inputFiles)
+            s_template=s_template.replace('DUMMYEVTSPERJOB',str(-1))
 
-            if (opt.DTIER == 'NTUP'):
-                s_template=s_template.replace('DUMMYRECLUST',str(opt.RECLUST))
-                s_template=s_template.replace('DUMMYSGO',str(opt.ADDGENORIG))
-                s_template=s_template.replace('DUMMYSGE',str(opt.ADDGENEXTR))
-                s_template=s_template.replace('DUMMYSPFC',str(opt.storePFCandidates))
-                s_template=s_template.replace('DUMMYMULCLUSTAG', str(opt.MULTICLUSTAG))
 
-            # submit job
-            # now write the file from the s_template
-            cfgfile_path = outDir + '/cfg/' + cfgfile
-            write_template= open(cfgfile_path, 'w')
-            write_template.write(s_template)
-            write_template.close()
 
-            write_condorjob= open(outDir+'/jobs/'+jobfile, 'w')
-            write_condorjob.write('+JobFlavour = "'+opt.QUEUE+'" \n\n')
-            write_condorjob.write('executable  = '+currentDir+'/SubmitFileGSD.sh \n')
-            write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
-            write_condorjob.write('output      = '+outDir+'/std/'+basename+'.out \n')
-            write_condorjob.write('error       = '+outDir+'/std/'+basename+'.err \n')
-            write_condorjob.write('log         = '+outDir+'/std/'+basename+'_htc.log \n\n')
-            write_condorjob.write('max_retries = 1\n')
-            write_condorjob.write('queue \n')
-            write_condorjob.close()
+        if (opt.DTIER == 'NTUP'):
+            s_template=s_template.replace('DUMMYRECLUST',str(opt.RECLUST))
+            s_template=s_template.replace('DUMMYSGO',str(opt.ADDGENORIG))
+            s_template=s_template.replace('DUMMYSGE',str(opt.ADDGENEXTR))
+            s_template=s_template.replace('DUMMYSPFC',str(opt.storePFCandidates))
+            s_template=s_template.replace('DUMMYMULCLUSTAG', str(opt.MULTICLUSTAG))
 
-            cmd = 'condor_submit ' + currentDir+'/'+outDir+'/jobs/'+jobfile
+        # submit job
+        # now write the file from the s_template
+        cfgfile_path = outDir + '/cfg/' + cfgfile
+        write_template= open(cfgfile_path, 'w')
+        write_template.write(s_template)
+        write_template.close()
 
-            #TODO This could probably be better handled by a job array
-            #Example: bsub -J "foo[1-3]" -oo "foo.%I.out" -eo "foo.%I.err" -q 8nm "sleep 1"
-            #This and more at https://www.ibm.com/support/knowledgecenter/SSETD4_9.1.3/lsf_command_ref/bsub.man_top.1.html
+        write_condorjob= open(outDir+'/jobs/'+jobfile, 'w')
+        write_condorjob.write('+JobFlavour = "'+opt.QUEUE+'" \n\n')
+        write_condorjob.write('executable  = '+currentDir+'/SubmitFileGSD.sh \n')
+        write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
+        write_condorjob.write('output      = '+outDir+'/std/'+basename+'.out \n')
+        write_condorjob.write('error       = '+outDir+'/std/'+basename+'.err \n')
+        write_condorjob.write('log         = '+outDir+'/std/'+basename+'_htc.log \n\n')
+        write_condorjob.write('max_retries = 1\n')
+        write_condorjob.write('queue \n')
+        write_condorjob.close()
 
-            if(opt.DRYRUN):
-                print 'Dry-run: ['+cmd+']'
-            else:
+        cmd = 'condor_submit ' + currentDir+'/'+outDir+'/jobs/'+jobfile
+
+        #TODO This could probably be better handled by a job array
+        #Example: bsub -J "foo[1-3]" -oo "foo.%I.out" -eo "foo.%I.err" -q 8nm "sleep 1"
+        #This and more at https://www.ibm.com/support/knowledgecenter/SSETD4_9.1.3/lsf_command_ref/bsub.man_top.1.html
+
+        if(opt.DRYRUN):
+            print 'Dry-run: ['+cmd+']'
+        else:
+            output = processCmd(cmd)
+            while ('error' in output):
+                time.sleep(1.0);
                 output = processCmd(cmd)
-                while ('error' in output):
-                    time.sleep(1.0);
-                    output = processCmd(cmd)
-                    if ('error' not in output):
-                        print 'Submitted after retry - job '+str(jobCount+1)
+                if ('error' not in output):
+                    print 'Submitted after retry - job '+str(jobCount+1)
 
-            jobCount += 1
-            created_cfgs.append(cfgfile_path)
+        jobCount += 1
+        created_cfgs.append(cfgfile_path)
 
     print '[Submitted '+str(jobCount)+' jobs]'
 
