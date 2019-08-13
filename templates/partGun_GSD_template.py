@@ -1,19 +1,36 @@
-import FWCore.ParameterSet.Config as cms
+# coding: utf-8
 
+import math
+
+import FWCore.ParameterSet.Config as cms
+from FWCore.ParameterSet.VarParsing import VarParsing
 from reco_prodtools.templates.GSD_fragment import process
 
-process.maxEvents.input = cms.untracked.int32(DUMMYEVTSPERJOB)
+# option parsing
+options = VarParsing('python')
+options.setDefault('outputFile', 'file:DUMMYFILENAME')
+options.setDefault('maxEvents', DUMMYEVTSPERJOB)
+options.register("seed", DUMMYSEED, VarParsing.multiplicity.singleton, VarParsing.varType.int,
+    "random seed")
+options.parseArguments()
+
+process.maxEvents.input = cms.untracked.int32(options.maxEvents)
 
 # random seeds
-process.RandomNumberGeneratorService.generator.initialSeed = cms.untracked.uint32(DUMMYSEED)
-process.RandomNumberGeneratorService.VtxSmeared.initialSeed = cms.untracked.uint32(DUMMYSEED)
-process.RandomNumberGeneratorService.mix.initialSeed = cms.untracked.uint32(DUMMYSEED)
+process.RandomNumberGeneratorService.generator.initialSeed = cms.untracked.uint32(options.seed)
+process.RandomNumberGeneratorService.VtxSmeared.initialSeed = cms.untracked.uint32(options.seed)
+process.RandomNumberGeneratorService.mix.initialSeed = cms.untracked.uint32(options.seed)
 
 # Input source
-process.source.firstLuminosityBlock = cms.untracked.uint32(DUMMYSEED)
+process.source.firstLuminosityBlock = cms.untracked.uint32(options.seed)
 
 # Output definition
-process.FEVTDEBUGHLToutput.fileName = cms.untracked.string('file:DUMMYFILENAME')
+process.FEVTDEBUGHLToutput.fileName = cms.untracked.string(
+    options.__getattr__("outputFile", noTags=True))
+
+# helper
+def calculate_rho(z, eta):
+    return z * math.tan(2 * math.atan(math.exp(-eta)))
 
 #DUMMYPUSECTION
 
@@ -24,11 +41,11 @@ if gunmode == 'default':
         AddAntiParticle = cms.bool(True),
         PGunParameters = cms.PSet(
             MaxEta = cms.double(DUMMYETAMAX),
-            MaxPhi = cms.double(3.14159265359),
+            MaxPhi = cms.double(math.pi),
             MAXTHRESHSTRING = cms.double(DUMMYTHRESHMAX),
-            MinEta = cms.double(DUMMYETAMIN),
-            MinPhi = cms.double(-3.14159265359),
             MINTHRESHSTRING = cms.double(DUMMYTHRESHMIN),
+            MinEta = cms.double(DUMMYETAMIN),
+            MinPhi = cms.double(-math.pi),
             #DUMMYINCONESECTION
             PartID = cms.vint32(DUMMYIDs)
         ),
@@ -44,8 +61,8 @@ elif gunmode == 'pythia8':
         PGunParameters = cms.PSet(
           ParticleID = cms.vint32(DUMMYIDs),
           AddAntiParticle = cms.bool(True),
-          MinPhi = cms.double(-3.14159265359),
-          MaxPhi = cms.double(3.14159265359),
+          MinPhi = cms.double(-math.pi),
+          MaxPhi = cms.double(math.pi),
           MINTHRESHSTRING = cms.double(DUMMYTHRESHMIN),
           MAXTHRESHSTRING = cms.double(DUMMYTHRESHMAX),
           MinEta = cms.double(1.479),
@@ -71,12 +88,49 @@ elif gunmode == 'closeby':
             NParticles = cms.int32(DUMMYNRANDOMPARTICLES),
             MaxEta = cms.double(DUMMYETAMAX),
             MinEta = cms.double(DUMMYETAMIN),
-            MaxPhi = cms.double(3.14159265359/6.),
-            MinPhi = cms.double(-3.14159265359/6.)
+            MaxPhi = cms.double(math.pi / 6.),
+            MinPhi = cms.double(-math.pi / 6.)
         ),
         Verbosity = cms.untracked.int32(10),
         psethack = cms.string('single or multiple particles predefined E moving vertex'),
         firstRun = cms.untracked.uint32(1)
+    )
+elif gunmode == 'closebydr':
+    particle_ids_str = 'DUMMYIDs'
+    particle_ids = []
+    for pid in particle_ids_str.split(","):
+        pid = pid.strip()
+        if pid == "mix":
+            particle_ids += 20 * [211, -211] + 20 * [22] + 10 * [11, -11] + 10 * [13, -13]
+        else:
+            particle_ids.append(int(pid))
+
+    process.generator = cms.EDProducer("CloseByFlatDeltaRGunProducer",
+        # particle ids
+        particleIDs=cms.vint32(particle_ids),
+        # max number of particles to shoot at a time
+        nParticles=cms.int32(DUMMYNRANDOMPARTICLES),
+        # shoot exactly the particles defined in particleIDs in that order
+        exactShoot=cms.bool(DUMMYEXACTSHOOT),
+        # randomly shoot [1, nParticles] particles, each time randomly drawn from particleIDs
+        randomShoot=cms.bool(DUMMYRANDOMSHOOT),
+        # energy range
+        eMin=cms.double(DUMMYTHRESHMIN),
+        eMax=cms.double(DUMMYTHRESHMAX),
+        # phi range
+        phiMin=cms.double(-math.pi / 6.),
+        phiMax=cms.double(math.pi / 6.),
+        # longitudinal distance in cm
+        zMin=cms.double(DUMMYZMIN),
+        zMax=cms.double(DUMMYZMAX),
+        # radial distance in cm
+        rhoMin=cms.double(calculate_rho(DUMMYZMIN, 1.6)),
+        rhoMax=cms.double(calculate_rho(DUMMYZMAX, 3.0)),
+        # deltaR settings
+        deltaRMin=cms.double(DUMMYRMIN),
+        deltaRMax=cms.double(DUMMYRMAX),
+        # debug flag
+        debug=cms.untracked.bool(True),
     )
 elif gunmode == 'physproc':
 

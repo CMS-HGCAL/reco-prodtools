@@ -1,15 +1,27 @@
-import FWCore.ParameterSet.Config as cms
+# coding: utf-8
 
+import FWCore.ParameterSet.Config as cms
+from FWCore.ParameterSet.VarParsing import VarParsing
 from reco_prodtools.templates.RECO_fragment import process
 
-process.maxEvents.input = cms.untracked.int32(DUMMYEVTSPERJOB)
+# option parsing
+options = VarParsing('python')
+options.setDefault('outputFile', 'file:DUMMYFILENAME')
+options.setDefault('inputFiles', DUMMYINPUTFILELIST)
+options.setDefault('maxEvents', DUMMYEVTSPERJOB)
+options.register('outputFileDQM', 'file:DUMMYDQMFILENAME',
+    VarParsing.multiplicity.singleton, VarParsing.varType.string, 'path to the DQM output file')
+options.parseArguments()
+
+process.maxEvents.input = cms.untracked.int32(options.maxEvents)
 
 # Input source
-process.source.fileNames = cms.untracked.vstring(DUMMYINPUTFILELIST)
+process.source.fileNames = cms.untracked.vstring(options.inputFiles)
 
 # Output definition
-process.FEVTDEBUGHLToutput.fileName = cms.untracked.string('file:DUMMYFILENAME')
-process.DQMoutput.fileName = cms.untracked.string('file:DUMMYDQMFILENAME')
+process.FEVTDEBUGHLToutput.fileName = cms.untracked.string(
+    options.__getattr__("outputFile", noTags=True))
+process.DQMoutput.fileName = cms.untracked.string(options.outputFileDQM)
 
 # Customisation from command line
 # process.hgcalLayerClusters.minClusters = cms.uint32(3)

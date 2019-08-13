@@ -1,15 +1,23 @@
-import FWCore.ParameterSet.Config as cms
+# coding: utf-8
 
+import FWCore.ParameterSet.Config as cms
+from FWCore.ParameterSet.VarParsing import VarParsing
 from reco_prodtools.templates.NTUP_fragment import process
 
-process.maxEvents.input = cms.untracked.int32(DUMMYEVTSPERJOB)
 
-process.source.fileNames = cms.untracked.vstring(
-       DUMMYINPUTFILELIST
-    )
+# option parsing
+options = VarParsing('python')
+options.setDefault('inputFiles', DUMMYINPUTFILELIST)
+options.setDefault('outputFile', 'file:DUMMYFILENAME')
+options.setDefault('maxEvents', DUMMYEVTSPERJOB)
+options.parseArguments()
+
+process.maxEvents.input = cms.untracked.int32(options.maxEvents)
+
+process.source.fileNames = cms.untracked.vstring(options.inputFiles)
 
 from FastSimulation.Event.ParticleFilter_cfi import *
-from RecoLocalCalo.HGCalRecProducers.HGCalRecHit_cfi import dEdX
+
 process.ana = cms.EDAnalyzer('HGCalAnalysis',
                              detector = cms.string("all"),
                              inputTag_HGCalMultiCluster = cms.string("DUMMYMULCLUSTAG"),
@@ -20,12 +28,8 @@ process.ana = cms.EDAnalyzer('HGCalAnalysis',
                              storeGenParticleOrigin = cms.bool(DUMMYSGO),
                              storeGenParticleExtrapolation = cms.bool(DUMMYSGE),
                              storeGunParticles = cms.bool(True),
-                             storePCAvariables = cms.bool(False),
                              storeElectrons = cms.bool(True),
                              storePFCandidates = cms.bool(DUMMYSPFC),
-                             recomputePCA = cms.bool(False),
-                             includeHaloPCA = cms.bool(True),
-                             dEdXWeights = dEdX.weights,
                              layerClusterPtThreshold = cms.double(-1),  # All LayerCluster belonging to a multicluster are saved; this Pt threshold applied to the others
                              TestParticleFilter = ParticleFilterBlock.ParticleFilter
 )
@@ -34,10 +38,8 @@ process.ana.TestParticleFilter.protonEMin = cms.double(100000)
 process.ana.TestParticleFilter.etaMax = cms.double(3.1)
 
 
-process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("file:DUMMYFILENAME")
-
-                                   )
+process.TFileService = cms.Service("TFileService", fileName = cms.string(
+    options.__getattr__("outputFile", noTags=True)))
 
 reRunClustering = DUMMYRECLUST
 
