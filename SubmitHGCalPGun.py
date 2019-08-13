@@ -10,6 +10,8 @@ import re
 
 eosExec = 'eos'
 
+thisdir = os.path.dirname(os.path.abspath(__file__))
+
 def createParser():
     usage = ('usage: %prog [options]\n'
              + '%prog -h for help')
@@ -23,8 +25,8 @@ def createParser():
     parser.add_option('-c', '--cfg',    dest='CONFIGFILE', type='string', default='',help='CMSSW config template name, if empty string the deafult one will be used')
     parser.add_option('-p', '--partID', dest='PARTID', type='string',     default='', help='string of particles\' PDG IDs to shoot, separated by comma')
     parser.add_option('', '--nPart',  dest='NPART',  type=int,   default=1,      help='number of times particles of type(s) PARTID will be generated per event, default is 1')
-    parser.add_option('', '--thresholdMin',  dest='thresholdMin',  type=float, default=-1.0, help='min. threshold value, used as min. pt phase space cut for physproc gunmode when >= 0')
-    parser.add_option('', '--thresholdMax',  dest='thresholdMax',  type=float, default=-1.0, help='max. threshold value, used as max. pt phase space cut for physproc gunmode when >= 0')
+    parser.add_option('', '--thresholdMin',  dest='thresholdMin',  type=float, default=-1.0, help='min. threshold value, used also as min. pt phase space cut for physproc gunmode when >= 0')
+    parser.add_option('', '--thresholdMax',  dest='thresholdMax',  type=float, default=-1.0, help='max. threshold value, used also as max. pt phase space cut for physproc gunmode when >= 0')
     parser.add_option('', '--etaMin',  dest='etaMin',  type=float, default=1.479,  help='min. eta value')
     parser.add_option('', '--etaMax',  dest='etaMax',  type=float, default=3.0,    help='max. eta value')
     parser.add_option('', '--zMin',  dest='zMin',  type=float, default=321.6,  help='min. z value start of EE at V10')
@@ -33,9 +35,8 @@ def createParser():
     parser.add_option('', '--rMax',  dest='rMax',  type=float, default=300.0,    help='max. r value')
     parser.add_option('', '--pointing',  action='store_false',  dest='pointing',  default=True,    help='pointing to (0,0,0) in case of closeby gun')
     parser.add_option('', '--overlapping',  action='store_true',  dest='overlapping',  default=False,    help='particles will be generated in window [phiMin,phiMax], [rMin,rMax] (true) or with a DeltaPhi=Delta/R (default false) in case of closeby gun')
-    parser.add_option('', '--randomShoot',  action='store_true',  dest='randomShoot',  default=False,    help='if true it will randomly choose one particle in the range [1, NParticles +1 ]')
-    parser.add_option('', '--nRandomPart',  dest='NRANDOMPART',  type=int,   default=1,      help='This is used together with randomShoot to shoot randomly [1, NParticles +1 ] particles, default is 1')
-    parser.add_option('', '--gunMode',   dest='gunMode',   type='string', default='default',    help='default, pythia8, physproc or closeby')
+    parser.add_option('', '--nRandomPart',  dest='NRANDOMPART',  type=int,   default=0,      help='when > 0, shoot randomly [1, NParticles +1 ] particles, default is 0')
+    parser.add_option('', '--gunMode',   dest='gunMode',   type='string', default='default',    help='default, pythia8, physproc, closeby or closebydr')
     parser.add_option('', '--gunType',   dest='gunType',   type='string', default='Pt',    help='Pt or E gun, or in case of gunType physproc details on the physics process')
     parser.add_option('', '--InConeID', dest='InConeID',   type='string',     default='', help='PDG ID for single particle to be generated in the cone (supported as PARTID), default is empty string (none)')
     parser.add_option('', '--MinDeltaR',  dest='MinDeltaR',  type=float, default=0.3, help='min. DR value')
@@ -46,7 +47,7 @@ def createParser():
     parser.add_option('-l', '--local',  action='store_true', dest='LOCAL',  default=False, help='store output dir locally instead of at EOS CMG area, default is False.')
     parser.add_option('-y', '--dry-run', action='store_true', dest='DRYRUN', default=False, help='perform a dry run (no jobs are lauched).')
     parser.add_option('', '--eosArea', dest='eosArea', type='string', default='/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production', help='path to the eos area where the output jobs will be staged out')
-    parser.add_option('-d', '--datTier', dest='DTIER',  type='string', default='GSD', help='data tier to run: "GSD" (GEN-SIM-DIGI) or "RECO", default is "GSD"')
+    parser.add_option('-d', '--datTier', dest='DTIER',  type='string', default='GSD', help='data tier to run: "GSD" (GEN-SIM-DIGI), "RECO" or "NTUP", default is "GSD"')
     parser.add_option('-i', '--inDir',  dest='inDir',  type='string', default='',   help='name of the previous stage dir (relative to the local submission or "eosArea"), to be used as the input for next stage, not applicable for GEN stage')
     parser.add_option('-o', '--outDir',  dest='outDir',  type='string', default='',   help='name of the output directory, the default value depends on the data tier and handles duplicate collisions')
     parser.add_option('-r', '--RelVal',  dest='RELVAL',  type='string', default='',   help='name of relval reco dataset to be ntuplized (currently implemented only for NTUP data Tier')
@@ -56,7 +57,7 @@ def createParser():
     parser.add_option('', '--storePFCandidates',  action='store_true', dest='storePFCandidates',  default=False, help='store PFCandidates collection')
     parser.add_option('', '--multiClusterTag',  action='store', dest='MULTICLUSTAG', default="hgcalMultiClusters", help='name of HGCalMultiCluster InputTag - use hgcalLayerClusters before CMSSW_10_3_X')
     parser.add_option('', '--keepDQMfile',  action='store_true', dest='DQM',  default=False, help='store the DQM file in relevant folder locally or in EOS, default is False.')
-
+    parser.add_option('', '--skipInputs', action='store_true', dest='skipInputs', default=False, help='skip interpolating input files from the previous step')
     return parser
 
 
@@ -71,51 +72,48 @@ def parseOptions(parser=None, opt=None):
     dataTiers = ['GSD', 'RECO', 'NTUP']
     if opt.DTIER not in dataTiers:
         parser.error('Data tier ' + opt.DTIER + ' is not supported. Exiting...')
-        sys.exit()
 
     # make sure CMSSW is set up
     if 'CMSSW_BASE' not in os.environ:
         print 'ERROR: CMSSW does not seem to be set up. Exiting...'
-        sys.exit()
+        sys.exit(1)
 
-    partGunModes = ['default', 'pythia8', 'closeby', 'physproc']
+    partGunModes = ['default', 'pythia8', 'closeby', 'closebydr', 'physproc']
     if opt.gunMode not in partGunModes:
         parser.error('Particle gun mode ' + opt.gunMode + ' is not supported. Exiting...')
-        sys.exit()
 
     partGunTypes = ['Pt', 'E']
     if opt.gunMode in ['default', 'pythia8'] and opt.gunType not in partGunTypes:
         parser.error('Particle gun type ' + opt.gunType + ' is not supported. Exiting...')
-        sys.exit()
+
+    if opt.DTIER == "GSD" and (opt.thresholdMin < 0 or opt.thresholdMax < 0):
+        parser.error("Thresholds should be properly set when data tier is GSD, found [{}, {}]. "
+            "Exiting ...".format(opt.thresholdMin, opt.thresholdMax))
 
     # set the default config, if not specified in options
     if (opt.CONFIGFILE == ''):
-        opt.CONFIGFILE = 'templates/partGun_'+opt.DTIER+'_template.py'
+        opt.CONFIGFILE = os.path.join(thisdir, 'templates/partGun_'+opt.DTIER+'_template.py')
 
     # supported queues with the recommended number of events per hour (e.g. ~4events/1nh for GSD, ~8events/1nh for RECO) + sanity check
     eventsPerHour = {'GSD':4, 'RECO':8, 'NTUP':100}
     queues_evtsperjob = {'nextweek':(7*24*eventsPerHour[opt.DTIER]), 'testmatch':(2*24*eventsPerHour[opt.DTIER]), 'tomorrow':(1*24*eventsPerHour[opt.DTIER]), 'workday':(8*eventsPerHour[opt.DTIER]), 'longlunch':(1*eventsPerHour[opt.DTIER]), 'microcentury':(1*eventsPerHour[opt.DTIER]), 'espresso':(1)}
     if opt.QUEUE not in queues_evtsperjob.keys():
         parser.error('Queue ' + opt.QUEUE + ' is not supported. Exiting...')
-        sys.exit()
     else:
         if opt.EVTSPERJOB==-1:
             opt.EVTSPERJOB = queues_evtsperjob[opt.QUEUE] # set the recommnded number of events per job, if requested
 
-    # list of supported particles, check if requested partID list is a subset of the list of the supported ones
-    particles = ['22', '111', '211', '-211', '11', '-11', '13', '-13', '15', '-15', '12', '14', '16', '130', '1', '-1', '2', '-2', '3', '-3', '4', '-4', '5', '-5', '21']
-    inPartID = [p.strip(" ") for p in opt.PARTID.split(",")] # prepare list of requested IDs (split by ",", strip white spaces)
-    if not (set(inPartID) < set(particles) or opt.PARTID == ''):
-        parser.error('Particle(s) with ID(s) ' + opt.PARTID + ' is not supported. Exiting...')
-        sys.exit()
+    # # list of supported particles, check if requested partID list is a subset of the list of the supported ones
+    # particles = ['22', '111', '211', '-211', '11', '-11', '13', '-13', '15', '-15', '12', '14', '16', '130', '1', '-1', '2', '-2', '3', '-3', '4', '-4', '5', '-5', '21']
+    # inPartID = [p.strip(" ") for p in opt.PARTID.split(",")] # prepare list of requested IDs (split by ",", strip white spaces)
+    # if not (set(inPartID) < set(particles) or opt.PARTID == ''):
+    #     parser.error('Particle(s) with ID(s) ' + opt.PARTID + ' is not supported. Exiting...')
 
     # sanity check for generation of particle within the cone (require to be compatibe with NPART==1, gunType==Pt and supported particles)
     if (opt.InConeID != '') and (opt.InConeID not in particles):
         parser.error('InCone particle with ID {} is not supported. Exiting...'.format(opt.InConeID))
-        sys.exit()
     if (opt.InConeID != '') and (opt.NPART != 1 or opt.gunType != 'Pt'):
         parser.error('In-cone multi-particle gun is incompatible with options NPART = {} (must be 1) or with gunType = {} (gun-type must be Pt). Exiting...'.format(opt.NPART, opt.gunType))
-        sys.exit()
 
     # overwrite for RelVal
     if opt.RELVAL != '':
@@ -154,7 +152,7 @@ def printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     if (opt.InConeID!='' and opt.DTIER=='GSD'):
         print '             IN-CONE: PDG ID '+str(opt.InConeID)+', deltaR in ['+str(opt.MinDeltaR)+ ','+str(opt.MaxDeltaR)+']'+', momentum ratio in ['+str(opt.MinMomRatio)+ ','+str(opt.MaxMomRatio)+']'
     if (opt.gunMode == 'closeby' and opt.DTIER=='GSD'):
-        print '             z threshold in ['+str(opt.zMin)+','+str(opt.zMax)+'], r threshold in ['+str(opt.rMin)+','+str(opt.rMax)+'], pointing to (0,0,0) '+str(opt.pointing) + ', overlapping '+str(opt.overlapping)+ ', randomShoot '+str(opt.randomShoot) + ', nRandomPart '+str(opt.NRANDOMPART)
+        print '             z threshold in ['+str(opt.zMin)+','+str(opt.zMax)+'], r threshold in ['+str(opt.rMin)+','+str(opt.rMax)+'], pointing to (0,0,0) '+str(opt.pointing) + ', overlapping '+str(opt.overlapping)+', nRandomPart '+str(opt.NRANDOMPART)
     print 'STORE AREA: ', [opt.eosArea, currentDir][int(opt.LOCAL)]
     print 'OUTPUT DIR: ', outDir
     print 'QUEUE:      ', opt.QUEUE
@@ -162,11 +160,15 @@ def printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     print '--------------------'
 
 ### prepare the list of input GSD files for RECO stage
-def getInputFileList(DASquery,inPath, inSubDir, local, pattern):
+def getInputFileList(DASquery, inPath, inSubDir, local, pattern):
     inputList = []
     if not DASquery:
         if (local):
-            inputList = [f for f in os.listdir(inPath+'/'+inSubDir) if (os.path.isfile(os.path.join(inPath+'/'+inSubDir, f)) and (fnmatch.fnmatch(f, pattern)))]
+            inputDir = os.path.join(inPath, inSubDir)
+            if os.path.exists(inputDir):
+                for f in os.listdir(inputDir):
+                    if os.path.isfile(os.path.join(inputDir, f) and fnmatch.fnmatch(f, pattern)):
+                        inputList.append(f)
         else:
             # this is a work-around, need to find a proper way to do it for EOS
             inputList = [f for f in processCmd(eosExec + ' ls ' + inPath+'/'+inSubDir+'/').split('\n') if ( (processCmd(eosExec + ' fileinfo ' + inPath+'/'+inSubDir+'/' + f).split(':')[0].lstrip() == 'File') and (fnmatch.fnmatch(f, pattern)))]
@@ -203,12 +205,13 @@ def submitHGCalProduction(*args, **kwargs):
         partGunType = 'MultiParticleInConeGunProducer'  # change part gun type if needed, keep opt.gunType unchanged (E or Pt) for the "primary particle"
     if opt.gunMode == 'closeby':
         partGunType = 'CloseByParticleGunProducer'
+    if opt.gunMode == 'closebydr':
+        partGunType = 'CloseByFlatDeltaRGunProducer'
 
     # RELVAL
     DASquery=False
     if opt.RELVAL != '':
         DASquery=True
-
 
     # in case of InCone generation of particles
     if opt.InConeID != '':
@@ -230,7 +233,6 @@ def submitHGCalProduction(*args, **kwargs):
         InConeSECTION=InConeSECTION.replace('DUMMYMinMomRatio', str(opt.MinMomRatio))
         InConeSECTION=InConeSECTION.replace('DUMMYMaxMomRatio', str(opt.MaxMomRatio))
 
-
     # previous data tier
     previousDataTier = ''
     if (opt.DTIER == 'RECO'):
@@ -245,9 +247,9 @@ def submitHGCalProduction(*args, **kwargs):
     elif (opt.DTIER == 'GSD'):
         outDir = "_".join([partGunType, tag]).replace(":", "_")
         if (not os.path.isdir(outDir)):
-            processCmd('mkdir -p '+outDir+'/cfg/')
-            processCmd('mkdir -p '+outDir+'/std/')
-            processCmd('mkdir -p '+outDir+'/jobs/')
+            processCmd('mkdir -p ' + os.path.join(outDir, 'cfg'))
+            processCmd('mkdir -p ' + os.path.join(outDir, 'std'))
+            processCmd('mkdir -p ' + os.path.join(outDir, 'jobs'))
         else:
             print 'Directory '+outDir+' already exists. Exiting...'
             sys.exit()
@@ -257,29 +259,29 @@ def submitHGCalProduction(*args, **kwargs):
         else:
             # create an ouput directory based on relval name
             outDir=opt.RELVAL.replace('/','_')
-        processCmd('mkdir -p '+outDir+'/cfg/')
-        processCmd('mkdir -p '+outDir+'/std/')
-        processCmd('mkdir -p '+outDir+'/jobs/')
+        processCmd('mkdir -p ' + os.path.join(outDir, 'cfg'))
+        processCmd('mkdir -p ' + os.path.join(outDir, 'std'))
+        processCmd('mkdir -p ' + os.path.join(outDir, 'jobs'))
 
-
-  # prepare dir for GSD outputs locally or at EOS
+    # prepare dir for GSD outputs locally or at EOS
     if (opt.LOCAL):
-        processCmd('mkdir -p '+outDir+'/'+opt.DTIER+'/')
-        recoInputPrefix = 'file:'+currentDir+'/'+outDir+'/'+previousDataTier+'/'
-        if (opt.DQM): processCmd('mkdir -p '+outDir+'/DQM/')
+        processCmd('mkdir -p ' + os.path.join(outDir, opt.DTIER))
+        recoInputPrefix = 'file:' + os.path.abspath(os.path.join(outDir, previousDataTier))
+        if (opt.DQM):
+            processCmd('mkdir -p ' + os.path.join(outDir, 'DQM'))
     elif opt.eosArea:
-        processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/'+opt.DTIER+'/');
-        recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+outDir+'/'+previousDataTier+'/'
-        if (opt.DQM): processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/DQM/')
+        processCmd(eosExec + ' mkdir -p ' + os.path.join(opt.eosArea, outDir, opt.DTIER))
+        recoInputPrefix = 'root://eoscms.cern.ch/' + os.path.join(opt.eosArea, outDir, previousDataTier)
+        if (opt.DQM):
+            processCmd(eosExec + ' mkdir -p ' + os.path.join(opt.eosArea, outDir, 'DQM'))
     # in case of relval always take reconInput from /store...
-    if DASquery: recoInputPrefix=''
+    if DASquery:
+            recoInputPrefix=''
 
-    # determine number of jobs for GSD, in case of 'RECO'/'NTUP' only get the input GSD/RECO path
-
-    if (opt.DTIER == 'GSD'):
-        njobs = int(math.ceil(float(opt.NEVTS)/float(opt.EVTSPERJOB)))
-    elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
-        inPath = [opt.eosArea+'/'+opt.inDir, currentDir+'/'+opt.inDir][opt.LOCAL]
+    # determine number of jobs, in case of 'RECO'/'NTUP' get the input GSD/RECO path
+    njobs = int(math.ceil(float(opt.NEVTS)/float(opt.EVTSPERJOB)))
+    if (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
+        inPath = [opt.eosArea+'/'+opt.inDir, os.path.abspath(opt.inDir)][opt.LOCAL]
         if DASquery: inPath=opt.RELVAL
 
     # print out some info
@@ -300,7 +302,7 @@ def submitHGCalProduction(*args, **kwargs):
     eventsPerPrevJob = 0
     sParticle = [p.strip(" ") for p in opt.PARTID.split(",")]  # prepare a list of particle strings without white spaces
     # in case of 'RECO' or 'NTUP', get the input file list for given particle, determine number of jobs, get also basic GSD/RECO info
-    if (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
+    if (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP') and not opt.skipInputs:
         inputFilesList = getInputFileList(DASquery,inPath, previousDataTier, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+"_id".join(sParticle)+'_*.root')
         if len(inputFilesList) == 0:
             print 'Empty list of input files!'
@@ -349,19 +351,20 @@ def submitHGCalProduction(*args, **kwargs):
                 s_template=s_template.replace('#DUMMYINCONESECTION',InConeSECTION)
 
             # prepare GEN-SIM-DIGI inputs
-            nParticles = ','.join([opt.PARTID for i in range(0,opt.NPART)])
-            s_template=s_template.replace('DUMMYEVTSPERJOB',str(opt.EVTSPERJOB))
+            particle_ids = ','.join([opt.PARTID for i in range(0 ,opt.NPART)])
 
-            s_template=s_template.replace('DUMMYIDs',nParticles)
+            s_template=s_template.replace('DUMMYEVTSPERJOB',str(opt.EVTSPERJOB))
+            s_template=s_template.replace('DUMMYIDs',particle_ids)
             s_template=s_template.replace('DUMMYTHRESHMIN',str(opt.thresholdMin))
             s_template=s_template.replace('DUMMYTHRESHMAX',str(opt.thresholdMax if opt.thresholdMax >= 0 else opt.thresholdMin))
             s_template=s_template.replace('DUMMYETAMIN',str(opt.etaMin))
             s_template=s_template.replace('DUMMYETAMAX',str(opt.etaMax))
             s_template=s_template.replace('GUNPRODUCERTYPE',str(partGunType))
+            s_template=s_template.replace('GUNMODE',str(opt.gunMode))
+
             if opt.gunMode != 'physproc':
                 s_template=s_template.replace('MAXTHRESHSTRING',"Max"+str(opt.gunType))
                 s_template=s_template.replace('MINTHRESHSTRING',"Min"+str(opt.gunType))
-            s_template=s_template.replace('GUNMODE',str(opt.gunMode))
             if opt.gunMode == 'closeby':
                 s_template=s_template.replace('DUMMYZMIN',str(opt.zMin))
                 s_template=s_template.replace('DUMMYZMAX',str(opt.zMax))
@@ -370,19 +373,27 @@ def submitHGCalProduction(*args, **kwargs):
                 s_template=s_template.replace('DUMMYRMAX',str(opt.rMax))
                 s_template=s_template.replace('DUMMYPOINTING',str(opt.pointing))
                 s_template=s_template.replace('DUMMYOVERLAPPING',str(opt.overlapping))
-                s_template=s_template.replace('DUMMYRANDOMSHOOT',str(opt.randomShoot))
+                s_template=s_template.replace('DUMMYRANDOMSHOOT',str(opt.NRANDOMPART > 0))
+                s_template=s_template.replace('DUMMYNRANDOMPARTICLES',str(opt.NRANDOMPART))
+            if opt.gunMode == 'closebydr':
+                s_template=s_template.replace('DUMMYZMIN',str(opt.zMin))
+                s_template=s_template.replace('DUMMYZMAX',str(opt.zMax))
+                s_template=s_template.replace('DUMMYRMIN',str(opt.rMin))
+                s_template=s_template.replace('DUMMYRMAX',str(opt.rMax))
+                s_template=s_template.replace('DUMMYRANDOMSHOOT',str(opt.NRANDOMPART > 0))
+                s_template=s_template.replace('DUMMYEXACTSHOOT',str(opt.NRANDOMPART <= 0))
                 s_template=s_template.replace('DUMMYNRANDOMPARTICLES',str(opt.NRANDOMPART))
 
-
         elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
-            # prepare RECO inputs
-            inputFilesListPerJob = inputFilesList[(job-1)*nFilesPerJob:(job)*nFilesPerJob]
-            if len(inputFilesListPerJob)==0: continue
-            inputFiles = '"' + '", "'.join([recoInputPrefix+str(f) for f in inputFilesListPerJob]) + '"'
+            if not opt.skipInputs:
+                # prepare RECO inputs
+                inputFilesListPerJob = inputFilesList[(job-1)*nFilesPerJob:(job)*nFilesPerJob]
+                if len(inputFilesListPerJob)==0: continue
+                inputFiles = '"' + '", "'.join([recoInputPrefix+str(f) for f in inputFilesListPerJob]) + '"'
+            else:
+                inputFiles = '[]'
             s_template=s_template.replace('DUMMYINPUTFILELIST',inputFiles)
             s_template=s_template.replace('DUMMYEVTSPERJOB',str(-1))
-
-
 
         if (opt.DTIER == 'NTUP'):
             s_template=s_template.replace('DUMMYRECLUST',str(opt.RECLUST))

@@ -129,7 +129,7 @@ one particle are asked to be produced, then each particle will be created at a d
 equally spaced by Delta, the arc-distance between two consecutive vertices
 over the circle of radius R. Also, there is the `--pointing` option which if used particles will be produced parallel to the beamline,  otherwise they will be pointing to (0,0,0). Furthermore, there is the `--overlapping` option that if used then
 particles will be generated in a window [phiMin,phiMax], [rMin,rMax], otherwise with a DeltaPhi=Delta/R.
-Another option is `--randomShoot` which if used will shoot a random number of particles. However, this option should be used alongside the `--nRandomPart` in order for the gun to know the upper limit on how many particles to shoot. The `--nRandomPart` option shouldn't be confused with the size of the `--partID` option, since with `--partID` we are setting the particles we are interesting in producing, while with `--nRandomPart` we are randomly choosing the number we want to shoot out of those `--partID` ids.
+Another options is `--nRandomPart` which, when set to a value > 0, will tell to gun to shoot a random number of particles in the range [1, nRandomPart]. The `--nRandomPart` option shouldn't be confused with the size of the `--partID` option, since with `--partID` we are setting the particles we are interesting in producing, while with `--nRandomPart` we are randomly choosing the number we want to shoot out of those `--partID` ids.
 Apart from producing multiple particles, this gun could also produce a single particle wherever the user wishes, having always the
 nice feature of assigning to the vertex the time required to travel from (0,0,0) to the desired location. This could be
 useful e.g. when someone wants to shoot straight to the scintillator part. Keep in mind that in this case there is no sense of
@@ -157,6 +157,44 @@ in the energy range from `EMIN` to `EMAX` (Pt option not available), radius rang
   --etaMax ETAMAX
   --gunType E
   --gunMode closeby
+  --tag MYTAG
+```
+
+### Close-by flat deltaR gun (`--gunMode closebydr`)
+
+This gun is very similar to the default closeby gun, except for the configuration of the overlap between shot particles.
+The position and direction of the gun for shooting the first particle is randomly selected using the following rules.
+
+Gun position:
+
+- The longitdinal distance from (0, 0, 0) is drawn from `[zMin, zMax]`. Use a typical value of `319.0` for both `zMin` and `zMax` to position the gun right at the start of the HGCal.
+- The horizontal distance from the beam line is drawn from a range `[rhoMin, rhoMax]`, where the borders follow from the minimum and maximum eta range of the HGCal of \~1.6 and \~3.0 respectively. There are no parameters to set `rhoMin` and `rhoMax` manually yet.
+- The phi angle is randomly drawn from `[-pi/6, pi/6]` which covers an area after which the geometry is repeated again.
+
+Gun direction:
+
+- The direction of the gun is always aranged such that its backwards trajectory points to (0, 0, 0).
+
+The 2nd to nth particles are shot in proximity to the first particle. This *proximity* is defined by a range `[rMin, rMax]` in delta R, i.e., distance in the eta-phi-plane. If the distance should always be, say, `0.5`, set both `rMin` and `rMax` to that value. If the distance should be **up to** `0.5`, set `rMin` to zero. The ciruclar angle is randomly drawn from `[0, 2pi]`.
+
+The remaining parameters are similar to the default closeby gun. Example:
+
+```shell
+  python SubmitHGCalPGun.py
+  --datTier GSD
+  --nevts NEVENTS
+  --evtsperjob NPERJOB
+  --queue QUEUENAME
+  --partID PART_PDGID
+  --nPart NPART
+  --thresholdMin EMIN
+  --thresholdMax EMAX
+  --rMin RMIN
+  --rMax RMAX
+  --zMin ZMIN
+  --zMax ZMAX
+  --gunType E
+  --gunMode closebydr
   --tag MYTAG
 ```
 
