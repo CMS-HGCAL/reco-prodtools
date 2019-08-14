@@ -96,18 +96,9 @@ elif gunmode == 'closeby':
         firstRun = cms.untracked.uint32(1)
     )
 elif gunmode == 'closebydr':
-    particle_ids_str = 'DUMMYIDs'
-    particle_ids = []
-    for pid in particle_ids_str.split(","):
-        pid = pid.strip()
-        if pid == "mix":
-            particle_ids += 20 * [211, -211] + 20 * [22] + 10 * [11, -11] + 10 * [13, -13]
-        else:
-            particle_ids.append(int(pid))
-
     process.generator = cms.EDProducer("CloseByFlatDeltaRGunProducer",
         # particle ids
-        particleIDs=cms.vint32(particle_ids),
+        particleIDs=cms.vint32(DUMMYIDs),
         # max number of particles to shoot at a time
         nParticles=cms.int32(DUMMYNRANDOMPARTICLES),
         # shoot exactly the particles defined in particleIDs in that order
@@ -124,8 +115,8 @@ elif gunmode == 'closebydr':
         zMin=cms.double(DUMMYZMIN),
         zMax=cms.double(DUMMYZMAX),
         # radial distance in cm
-        rhoMin=cms.double(calculate_rho(DUMMYZMIN, 1.6)),
-        rhoMax=cms.double(calculate_rho(DUMMYZMAX, 3.0)),
+        rhoMin=cms.double(calculate_rho(DUMMYZMAX, 1.6)),
+        rhoMax=cms.double(calculate_rho(DUMMYZMIN, 3.0)),
         # deltaR settings
         deltaRMin=cms.double(DUMMYRMIN),
         deltaRMax=cms.double(DUMMYRMAX),

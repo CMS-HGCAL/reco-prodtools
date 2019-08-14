@@ -103,11 +103,12 @@ def parseOptions(parser=None, opt=None):
         if opt.EVTSPERJOB==-1:
             opt.EVTSPERJOB = queues_evtsperjob[opt.QUEUE] # set the recommnded number of events per job, if requested
 
-    # # list of supported particles, check if requested partID list is a subset of the list of the supported ones
-    # particles = ['22', '111', '211', '-211', '11', '-11', '13', '-13', '15', '-15', '12', '14', '16', '130', '1', '-1', '2', '-2', '3', '-3', '4', '-4', '5', '-5', '21']
-    # inPartID = [p.strip(" ") for p in opt.PARTID.split(",")] # prepare list of requested IDs (split by ",", strip white spaces)
-    # if not (set(inPartID) < set(particles) or opt.PARTID == ''):
-    #     parser.error('Particle(s) with ID(s) ' + opt.PARTID + ' is not supported. Exiting...')
+    # list of supported particles, check if requested partID list is a subset of the list of the supported ones
+    particles = ['22', '111', '211', '-211', '11', '-11', '13', '-13', '15', '-15', '12', '14',
+        '16', '130', '1', '-1', '2', '-2', '3', '-3', '4', '-4', '5', '-5', '21', 'mix1']
+    inPartID = [p.strip(" ") for p in opt.PARTID.split(",")] # prepare list of requested IDs (split by ",", strip white spaces)
+    if not (set(inPartID) < set(particles) or opt.PARTID == ''):
+        parser.error('Particle(s) with ID(s) ' + opt.PARTID + ' is not supported. Exiting...')
 
     # sanity check for generation of particle within the cone (require to be compatibe with NPART==1, gunType==Pt and supported particles)
     if (opt.InConeID != '') and (opt.InConeID not in particles):
@@ -300,10 +301,13 @@ def submitHGCalProduction(*args, **kwargs):
 
     nFilesPerJob = 0
     eventsPerPrevJob = 0
-    sParticle = [p.strip(" ") for p in opt.PARTID.split(",")]  # prepare a list of particle strings without white spaces
+    if opt.PARTID.startswith("mix"):
+        sParticle = "_id" + opt.PARTID
+    else:
+        sParticle = "_id".join([p.strip(" ") for p in opt.PARTID.split(",")])
     # in case of 'RECO' or 'NTUP', get the input file list for given particle, determine number of jobs, get also basic GSD/RECO info
     if (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP') and not opt.skipInputs:
-        inputFilesList = getInputFileList(DASquery,inPath, previousDataTier, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+"_id".join(sParticle)+'_*.root')
+        inputFilesList = getInputFileList(DASquery,inPath, previousDataTier, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+sParticle+'_*.root')
         if len(inputFilesList) == 0:
             print 'Empty list of input files!'
             return created_cfgs
@@ -332,7 +336,7 @@ def submitHGCalProduction(*args, **kwargs):
         elif opt.gunMode == 'physproc':
             basename='physproc_'+'_'.join(opt.gunType.split(':'))+'_'+opt.DTIER+'_'+str(job)
         else:
-            basename = commonFileNamePrefix + '_PDGid'+"_id".join(sParticle)+'_x'+str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD'])+'_' + opt.gunType+str(opt.thresholdMin)+'To'+str(opt.thresholdMax)+'_'+opt.DTIER+'_'+str(job)
+            basename = commonFileNamePrefix + '_PDGid'+sParticle+'_x'+str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD'])+'_' + opt.gunType+str(opt.thresholdMin)+'To'+str(opt.thresholdMax)+'_'+opt.DTIER+'_'+str(job)
 
         cfgfile = basename +'.py'
         outfile = basename +'.root'
@@ -351,7 +355,11 @@ def submitHGCalProduction(*args, **kwargs):
                 s_template=s_template.replace('#DUMMYINCONESECTION',InConeSECTION)
 
             # prepare GEN-SIM-DIGI inputs
-            particle_ids = ','.join([opt.PARTID for i in range(0 ,opt.NPART)])
+            if opt.PARTID == 'mix1':
+                particle_ids = 20 * [211, -211] + 20 * [22] + 10 * [11, -11] + 10 * [13, -13]
+                particle_ids = ','.join(str(pid) for pid in particle_ids)
+            else:
+                particle_ids = ','.join(opt.NPART * [opt.PARTID])
 
             s_template=s_template.replace('DUMMYEVTSPERJOB',str(opt.EVTSPERJOB))
             s_template=s_template.replace('DUMMYIDs',particle_ids)
