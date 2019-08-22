@@ -88,6 +88,10 @@ def parseOptions(parser=None, opt=None):
         parser.error('Particle gun type ' + opt.gunType + ' is not supported. Exiting...')
         sys.exit()
 
+    # Set upper threshold to lower value if upper one not set
+    if opt.thresholdMax < 0:
+        opt.thresholdMax = opt.thresholdMin
+
     # set the default config, if not specified in options
     if (opt.CONFIGFILE == ''):
         opt.CONFIGFILE = 'templates/partGun_'+opt.DTIER+'_template.py'
@@ -354,7 +358,7 @@ def submitHGCalProduction(*args, **kwargs):
 
             s_template=s_template.replace('DUMMYIDs',nParticles)
             s_template=s_template.replace('DUMMYTHRESHMIN',str(opt.thresholdMin))
-            s_template=s_template.replace('DUMMYTHRESHMAX',str(opt.thresholdMax if opt.thresholdMax >= 0 else opt.thresholdMin))
+            s_template=s_template.replace('DUMMYTHRESHMAX',str(opt.thresholdMax))
             s_template=s_template.replace('DUMMYETAMIN',str(opt.etaMin))
             s_template=s_template.replace('DUMMYETAMAX',str(opt.etaMax))
             s_template=s_template.replace('GUNPRODUCERTYPE',str(partGunType))
