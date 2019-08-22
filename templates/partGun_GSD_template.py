@@ -48,8 +48,8 @@ elif gunmode == 'pythia8':
           MaxPhi = cms.double(3.14159265359),
           MINTHRESHSTRING = cms.double(DUMMYTHRESHMIN),
           MAXTHRESHSTRING = cms.double(DUMMYTHRESHMAX),
-          MinEta = cms.double(1.479),
-          MaxEta = cms.double(3.0)
+          MinEta = cms.double(DUMMYETAMIN),
+          MaxEta = cms.double(DUMMYETAMAX)
           ),
         PythiaParameters = cms.PSet(parameterSets = cms.vstring())
     )
