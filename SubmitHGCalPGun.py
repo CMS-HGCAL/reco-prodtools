@@ -306,7 +306,7 @@ def submitHGCalProduction(*args, **kwargs):
     processDetails = '_PDGid'+'_id'.join(sParticle)
     if opt.gunMode == 'physproc':
         processDetails = '_'.join(opt.gunType.split(':'))
-    cutsApplied = '_' + opt.gunType + str(opt.thresholdMin) + 'To' + str(opt.thresholdMax)
+    cutsApplied = '_' + opt.gunType + str(opt.thresholdMin) + 'To' + str(opt.thresholdMax) + '_'
     # in case of 'RECO' or 'NTUP', get the input file list for given particle, determine number of jobs, get also basic GSD/RECO info
     if (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
         inputFilesList = getInputFileList(DASquery, inPath, previousDataTier, opt.LOCAL, '*.root')
