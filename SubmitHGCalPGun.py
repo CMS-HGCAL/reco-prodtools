@@ -197,7 +197,7 @@ def submitHGCalProduction(*args, **kwargs):
     CMSSW_BASE = os.getenv('CMSSW_BASE')
     CMSSW_VERSION = os.getenv('CMSSW_VERSION')
     SCRAM_ARCH = os.getenv('SCRAM_ARCH')
-    commonFileNamePrefix = 'partGun'
+    commonFileNamePrefix = opt.gunMode
     partGunType = 'FlatRandom%sGunProducer' % opt.gunType
     if opt.gunMode == 'pythia8':
         partGunType = 'Pythia8%sGun' % opt.gunType
@@ -302,21 +302,26 @@ def submitHGCalProduction(*args, **kwargs):
 
     nFilesPerJob = 0
     eventsPerPrevJob = 0
-    sParticle = [p.strip(" ") for p in opt.PARTID.split(",")]  # prepare a list of particle strings without white spaces
+    sParticle = [p.strip(" ") for p in opt.PARTID.split(",")]
+    processDetails = '_PDGid'+'_id'.join(sParticle)
+    if opt.gunMode == 'physproc':
+        processDetails = '_'.join(opt.gunType.split(':'))
+    cutsApplied = '_' + opt.gunType + str(opt.thresholdMin) + 'To' + str(opt.thresholdMax)
     # in case of 'RECO' or 'NTUP', get the input file list for given particle, determine number of jobs, get also basic GSD/RECO info
     if (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
-        inputFilesList = getInputFileList(DASquery,inPath, previousDataTier, opt.LOCAL, commonFileNamePrefix+'*_PDGid'+"_id".join(sParticle)+'_*.root')
+        inputFilesList = getInputFileList(DASquery, inPath, previousDataTier, opt.LOCAL, '*.root')
         if len(inputFilesList) == 0:
             print 'Empty list of input files!'
             return created_cfgs
+        # Determine prefix for regex from first input file name
+        commonFileNamePrefix = inputFilesList[0].split("_", 1)[0]
         # build regular expression for splitting (NOTE: none of this is used for relval!)
         if not DASquery:
-            regex = re.compile(ur"partGun_PDGid[0-9]*[_id[0-9]*]*_x([0-9]*)_(E|Pt)([0-9]*[.]?[0-9]*)To([0-9]*[.]?[0-9]*)_.*\.root")
+            regex = re.compile(ur"{prefix}(_\S*)_x([0-9]*)(_\S*){tier}_([0-9]*).root".format(prefix=commonFileNamePrefix, tier=previousDataTier))
             matches = regex.match(inputFilesList[0])
-            eventsPerPrevJob = int(matches.group(1))
-            opt.gunType = matches.group(2)
-            opt.thresholdMin = float(matches.group(3))
-            opt.thresholdMax = float(matches.group(4))
+            processDetails = matches.group(1)
+            eventsPerPrevJob = int(matches.group(2))
+            cutsApplied = matches.group(3)  # includes leading and trailing underscore if applicable
             nFilesPerJob = max(int(math.floor(float(min(opt.EVTSPERJOB, len(inputFilesList)*eventsPerPrevJob))/float(eventsPerPrevJob))),1)
             njobs = int(math.ceil(float(len(inputFilesList))/float(nFilesPerJob)))
         else:
@@ -331,10 +336,8 @@ def submitHGCalProduction(*args, **kwargs):
         # prepare the out file and cfg file by replacing DUMMY entries according to input options
         if DASquery:
             basename=outDir+'_'+opt.DTIER+'_'+str(job)
-        elif opt.gunMode == 'physproc':
-            basename='physproc_'+'_'.join(opt.gunType.split(':'))+'_'+opt.DTIER+'_'+str(job)
         else:
-            basename = commonFileNamePrefix + '_PDGid'+"_id".join(sParticle)+'_x'+str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD'])+'_' + opt.gunType+str(opt.thresholdMin)+'To'+str(opt.thresholdMax)+'_'+opt.DTIER+'_'+str(job)
+            basename = commonFileNamePrefix + processDetails+'_x' + str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD']) + cutsApplied + opt.DTIER + '_' + str(job)
 
         cfgfile = basename +'.py'
         outfile = basename +'.root'
