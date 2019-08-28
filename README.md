@@ -35,8 +35,8 @@ Mind that the directory `reco_prodtools` needs to have the underscore (instead o
 
 ## Available configurations
 
-For details on the geometry, please see [Configuration/Geometry/README.md](https://github.com/cms-sw/cmssw/blob/master/Configuration/Geometry/README.md)
-For details on the pileup scenario, please see [Configuration/StandardSequences/python/Mixing.py](https://github.com/cms-sw/cmssw/blob/master/Configuration/StandardSequences/python/Mixing.py)
+For details on the geometry, please see [Configuration/Geometry/README.md](https://github.com/cms-sw/cmssw/blob/master/Configuration/Geometry/README.md).
+For details on the pileup scenario, please see [Configuration/StandardSequences/python/Mixing.py](https://github.com/cms-sw/cmssw/blob/master/Configuration/StandardSequences/python/Mixing.py). Also **note** that running the GSD step for the pileup scenario requires a **valid voms proxy** (`voms-proxy-init [-voms cms]`).
 
 | Snippet        | Era            | Geometry       | Beamspot       | PU             |
 | -------------- | -------------- | -------------- | -------------- | -------------- |
