@@ -71,8 +71,8 @@ elif gunmode == 'closeby':
             NParticles = cms.int32(DUMMYNRANDOMPARTICLES),
             MaxEta = cms.double(DUMMYETAMAX),
             MinEta = cms.double(DUMMYETAMIN),
-            MaxPhi = cms.double(3.14159265359/6.),
-            MinPhi = cms.double(-3.14159265359/6.)
+            MaxPhi = cms.double(3.14159265359),
+            MinPhi = cms.double(-3.14159265359)
         ),
         Verbosity = cms.untracked.int32(10),
         psethack = cms.string('single or multiple particles predefined E moving vertex'),
