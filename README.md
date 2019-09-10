@@ -199,13 +199,13 @@ python SubmitHGCalPGun.py \
   --queue QUEUENAME \
   --inDir partGun_[MYTAG]_[DATE] \
   [--local] \
-  --tag MYTAG \
+  [--tag NEWTAG] \
   --keepDQMfile
 ```
 
-The script will get the list of GEN-SIM-DIGI files from the directory `partGun_[MYTAG]_[DATE]`/`GSD` (locally or on the CMG EOS area), and submit jobs to queue `QUEUENAME` (if possbile with `NPERJOB` events per job).
-The batch `stdout`/`stderr` files and `.cfg` files are stored locally `in partGun_[MYTAG]_[DATE]`, while the resulting files `partGun_*_RECO_{i}.root` are stored in `partGun_[MYTAG]_[DATE]`/`RECO` either locally or in  `/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/`.
-In case the `--keepDQMfile` option is used, the resulting `partGun_*_DQM_{i}.root` files will also be stored in `partGun_[MYTAG]_[DATE]`/`DQM` locally or in `/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/`.
+The script will get the list of GEN-SIM-DIGI files from the directory `partGun_[MYTAG]_[DATE]`/`GSD` (locally or on the CMG EOS area), and submit jobs to queue `QUEUENAME` (if possible with `NPERJOB` events per job).
+The batch `stdout`/`stderr` files and `.cfg` files are stored locally `in partGun_[MYTAG]_[DATE]`, while the resulting files `partGun_*_RECO_{i}.root` are stored in `partGun_[MYTAG]_[DATE]_[NEWTAG]`/`RECO` (`_NEWTAG` is only added if `--tag` is used) either locally or in  `/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/`.
+In case the `--keepDQMfile` option is used, the resulting `partGun_*_DQM_{i}.root` files will also be stored in `partGun_[MYTAG]_[DATE]_[NEWTAG]`/`DQM` locally or in `/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/`.
 
 Rule of thumb for RECO: 10 events per `1nh`:
 
@@ -229,7 +229,7 @@ python SubmitHGCalPGun.py \
   [--multiClusterTag hgcalLayerClusters] \
   [--noReClust] \
   [--local] \
-  --tag MYTAG
+  [--tag NEWTAG]
 ```
 
 Mind that the `multiClusterTag` option needs to be provided for RECO files created before `CMSSW_10_3_X`.
