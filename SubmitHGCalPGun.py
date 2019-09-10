@@ -257,7 +257,13 @@ def submitHGCalProduction(*args, **kwargs):
             sys.exit()
     elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
         if not DASquery:
-            outDir = opt.inDir
+            # If tag provided, append it to the output directory.
+            # This is e.g. useful for running different kinds of
+            # reconstruction code on the same input file.
+            if opt.TAG:
+                outDir = opt.inDir.strip("/") + "_" + opt.TAG
+            else:
+                outDir = opt.inDir
         else:
             # create an ouput directory based on relval name
             outDir=opt.RELVAL.replace('/','_')
