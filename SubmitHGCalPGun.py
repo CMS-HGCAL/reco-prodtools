@@ -275,11 +275,11 @@ def submitHGCalProduction(*args, **kwargs):
   # prepare dir for GSD outputs locally or at EOS
     if (opt.LOCAL):
         processCmd('mkdir -p '+outDir+'/'+opt.DTIER+'/')
-        recoInputPrefix = 'file:'+currentDir+'/'+outDir+'/'+previousDataTier+'/'
+        recoInputPrefix = 'file:'+currentDir+'/'+opt.inDir+'/'+previousDataTier+'/'
         if (opt.DQM): processCmd('mkdir -p '+outDir+'/DQM/')
     elif opt.eosArea:
         processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/'+opt.DTIER+'/');
-        recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+outDir+'/'+previousDataTier+'/'
+        recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+opt.inDir+'/'+previousDataTier+'/'
         if (opt.DQM): processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/DQM/')
     # in case of relval always take reconInput from /store...
     if DASquery: recoInputPrefix=''
