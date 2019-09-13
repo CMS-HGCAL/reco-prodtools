@@ -257,7 +257,13 @@ def submitHGCalProduction(*args, **kwargs):
             sys.exit()
     elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
         if not DASquery:
-            outDir = opt.inDir
+            # If tag provided, append it to the output directory.
+            # This is e.g. useful for running different kinds of
+            # reconstruction code on the same input file.
+            if opt.TAG:
+                outDir = opt.inDir.strip("/") + "_" + opt.TAG
+            else:
+                outDir = opt.inDir
         else:
             # create an ouput directory based on relval name
             outDir=opt.RELVAL.replace('/','_')
@@ -269,11 +275,11 @@ def submitHGCalProduction(*args, **kwargs):
   # prepare dir for GSD outputs locally or at EOS
     if (opt.LOCAL):
         processCmd('mkdir -p '+outDir+'/'+opt.DTIER+'/')
-        recoInputPrefix = 'file:'+currentDir+'/'+outDir+'/'+previousDataTier+'/'
+        recoInputPrefix = 'file:'+currentDir+'/'+opt.inDir+'/'+previousDataTier+'/'
         if (opt.DQM): processCmd('mkdir -p '+outDir+'/DQM/')
     elif opt.eosArea:
         processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/'+opt.DTIER+'/');
-        recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+outDir+'/'+previousDataTier+'/'
+        recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+opt.inDir+'/'+previousDataTier+'/'
         if (opt.DQM): processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/DQM/')
     # in case of relval always take reconInput from /store...
     if DASquery: recoInputPrefix=''
