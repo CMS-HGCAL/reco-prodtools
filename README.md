@@ -52,6 +52,15 @@ The processing of TICL iterations is added into the RECO fragment by default. To
 ./produceSkeletons_D41_NoSmear_noPU.sh no-ticl
 ```
 
+Other options like changing the pileup source, calling --customise on cmsDriver or changing geometry can be passed with the following script
+
+```shell 
+./produceSkeletons_D41_NoSmear_PU_AVE_200_BX_25ns_aged.sh \
+        pileup_input=/eos/cms//store/group/dpg_hgcal/comm_hgcal/deguio/pu_library/V11/GEN-SIM \
+        custom="--customise SLHCUpgradeSimulations/Configuration/aging.agedHGCal" \
+        geometry=Extended2026D46
+```
+
 ## Available guns and processes
 
 The production tools allow you to generate a plethora of processes (links lead to implementation in CMSSW):
