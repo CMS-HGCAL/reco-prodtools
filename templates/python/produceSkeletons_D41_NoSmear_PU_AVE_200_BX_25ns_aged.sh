@@ -41,17 +41,17 @@ action() {
 
   # parse arguments
   for arg in "$@"; do
-    if [ "$arg" = "ticl" ]; then
+    if [ "$arg" = ^"ticl" ]; then
       inject_ticl="1"
-    elif [ "$arg" = "no-ticl" ]; then
+    elif [ "$arg" = ^"no-ticl" ]; then
       inject_ticl="0"
-    elif [[ $arg =~ "geometry" ]]; then        
+    elif [[ $arg =~ ^"geometry" ]]; then        
         geometry=${arg/geometry=/}
         echo "Geometry will be modified to $geometry"
-    elif [[ $arg =~ "custom" ]]; then        
+    elif [[ $arg =~ ^"custom" ]]; then        
         custom=${arg/custom=/}
         echo "Custom options $custom"
-    elif [[ $arg =~ "pileup_input" ]]; then
+    elif [[ $arg =~ ^"pileup_input" ]]; then
         pileup_input=${arg/pileup_input=/}
         #if das is not given try to build the list of files by listing the local directory given
         if [[ ${pileup_input} != *"das:"* ]]; then
