@@ -147,8 +147,6 @@ def printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     print 'CMSSW BASE: ', CMSSW_BASE
     print 'CMSSW VER:  ', CMSSW_VERSION,'[', SCRAM_ARCH, ']'
     print 'CONFIGFILE: ', opt.CONFIGFILE
-    if opt.useT3:
-        print '(using the T3 condor group for the submissions)'
     # relval takes precedence...
     if (opt.RELVAL == ''):
         curr_input= opt.inDir
@@ -166,6 +164,8 @@ def printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     print 'OUTPUT DIR: ', outDir
     print 'QUEUE:      ', opt.QUEUE
     print ['NUM. EVTS:   '+str(opt.NEVTS), ''][int(opt.DTIER!='GSD')]
+    if opt.useT3:
+        print 'CONDOR:       using the T3 condor group for the submissions'
     print '--------------------'
 
 ### prepare the list of input GSD files for RECO stage
