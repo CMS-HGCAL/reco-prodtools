@@ -165,7 +165,7 @@ def printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     print 'QUEUE:      ', opt.QUEUE
     print ['NUM. EVTS:   '+str(opt.NEVTS), ''][int(opt.DTIER!='GSD')]
     if opt.useT3:
-        print 'CONDOR:       using the T3 condor group for the submissions'
+        print 'CONDOR:      using the T3 condor group for the submissions'
     print '--------------------'
 
 ### prepare the list of input GSD files for RECO stage
