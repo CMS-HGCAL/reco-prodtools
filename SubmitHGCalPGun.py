@@ -56,6 +56,7 @@ def createParser():
     parser.add_option('', '--storePFCandidates',  action='store_true', dest='storePFCandidates',  default=False, help='store PFCandidates collection')
     parser.add_option('', '--multiClusterTag',  action='store', dest='MULTICLUSTAG', default="hgcalMultiClusters", help='name of HGCalMultiCluster InputTag - use hgcalLayerClusters before CMSSW_10_3_X')
     parser.add_option('', '--keepDQMfile',  action='store_true', dest='DQM',  default=False, help='store the DQM file in relevant folder locally or in EOS, default is False.')
+    parser.add_option('', '--useT3', action='store_true', dest='useT3',  default=False, help='use the t3-specific share of the CERN HTCondor; adds a line to the condor .sub file')
 
     return parser
 
@@ -129,10 +130,10 @@ def parseOptions(parser=None, opt=None):
 
 
 ### processing the external os commands
-def processCmd(cmd, quite = 0):
+def processCmd(cmd, quiet = 0):
     #print cmd
     status, output = commands.getstatusoutput(cmd)
-    if (status !=0 and not quite):
+    if (status !=0 and not quiet):
         print 'Error in processing command:\n   ['+cmd+']'
         print 'Output:\n   ['+output+'] \n'
     return output
@@ -146,6 +147,8 @@ def printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     print 'CMSSW BASE: ', CMSSW_BASE
     print 'CMSSW VER:  ', CMSSW_VERSION,'[', SCRAM_ARCH, ']'
     print 'CONFIGFILE: ', opt.CONFIGFILE
+    if opt.useT3:
+        print '(using the T3 condor group for the submissions)'
     # relval takes precedence...
     if (opt.RELVAL == ''):
         curr_input= opt.inDir
@@ -249,6 +252,7 @@ def submitHGCalProduction(*args, **kwargs):
     elif (opt.DTIER == 'GSD'):
         outDir = "_".join([partGunType, tag]).replace(":", "_")
         if (not os.path.isdir(outDir)):
+            # GF: option to send the logs in eos... 
             processCmd('mkdir -p '+outDir+'/cfg/')
             processCmd('mkdir -p '+outDir+'/std/')
             processCmd('mkdir -p '+outDir+'/jobs/')
@@ -299,7 +303,7 @@ def submitHGCalProduction(*args, **kwargs):
     print '[Submitting jobs]'
     jobCount=0
 
-    # read the template file in a single string
+    # read the CMSSW .py template file in a single string
     f_template= open(opt.CONFIGFILE, 'r')
     template= f_template.read()
     f_template.close()
@@ -413,6 +417,8 @@ def submitHGCalProduction(*args, **kwargs):
 
         write_condorjob= open(outDir+'/jobs/'+jobfile, 'w')
         write_condorjob.write('+JobFlavour = "'+opt.QUEUE+'" \n\n')
+        if opt.useT3:
+            write_condorjob.write('+AccountingGroup = "group_u_CMST3.all"\n')
         write_condorjob.write('executable  = '+currentDir+'/SubmitFileGSD.sh \n')
         write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
         write_condorjob.write('output      = '+outDir+'/std/'+basename+'.out \n')
