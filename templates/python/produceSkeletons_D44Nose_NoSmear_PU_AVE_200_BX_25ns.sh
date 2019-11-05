@@ -34,7 +34,8 @@
 
 action() {
   # default arguments
-  local inject_ticl="1"
+  local inject_ticl="0"
+  local inject_nose="1"
 
   # parse arguments
   for arg in "$@"; do
@@ -42,16 +43,19 @@ action() {
       inject_ticl="1"
     elif [ "$arg" = "no-ticl" ]; then
       inject_ticl="0"
+    elif [ "$arg" = "nose" ]; then
+      inject_nose="1"
+    elif [ "$arg" = "no-nose" ]; then
+      inject_nose="0"
     else
       2>&1 echo "unknown argument: $arg"
       return "1"
     fi
   done
 
-  pileup_input='/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production//MinBias_14TeV_Extended2026D44_Phase2C6_timing_layer_bar_v0/GEN-SIM/'
+  pileup_input='/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/minbias_V9Nose_20191024/GSD/'
   pileup_input=`find ${pileup_input} -iname "*.root" -printf "file:%h/%f,"`
   pileup_input=${pileup_input::-1}
-  
 
   cmsDriver.py TTbar_14TeV_TuneCUETP8M1_cfi \
     --conditions auto:phase2_realistic_T14 \
@@ -66,7 +70,6 @@ action() {
     --pileup_input ${pileup_input} \
     --no_exec \
     --python_filename=GSD_fragment.py
-
 
   cmsDriver.py step3 \
     --conditions auto:phase2_realistic_T14 \
@@ -92,6 +95,7 @@ action() {
     fi
   fi
 
+# Customisation from command line
 
   cmsDriver.py step3 \
     --conditions auto:phase2_realistic_T14 \
@@ -105,5 +109,14 @@ action() {
     --no_exec \
     --processName=NTUP \
     --python_filename=NTUP_fragment.py
+
+    echo -e "\ninject nose into NTUP_fragment.py"
+    ./inject_nose.sh NTUP_fragment.py ${inject_nose}
+    if [ "$?" = "0" ]; then
+      echo
+    else
+      2>&1 echo "nose injection failed"
+      return "2"
+    fi
 }
 action "$@"
