@@ -1,5 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
+import reco_prodtools.templates.NTUP_fragment as ntup_frag
 from reco_prodtools.templates.NTUP_fragment import process
 
 process.maxEvents.input = cms.untracked.int32(DUMMYEVTSPERJOB)
@@ -33,10 +34,14 @@ process.ana = cms.EDAnalyzer('HGCalAnalysis',
 process.ana.TestParticleFilter.protonEMin = cms.double(100000)
 process.ana.TestParticleFilter.etaMax = cms.double(3.1)
 
+# customisation occurs here
+if hasattr(ntup_frag, 'doNose'):
+   if ntup_frag.doNose:
+       process.ana.detector = cms.string("HFNose")
+       process.ana.TestParticleFilter.etaMax = cms.double(6.0)
 
 process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string("file:DUMMYFILENAME")
-
                                    )
 
 reRunClustering = DUMMYRECLUST
