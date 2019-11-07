@@ -43,6 +43,7 @@ For details on the pileup scenario, please see [Configuration/StandardSequences/
 | [produceSkeletons_D41_NoSmear_noPU.sh](templates/python/produceSkeletons_D41_NoSmear_noPU.sh) | Phase2C8 | D41 | NoSmear | none |
 | [produceSkeletons_D41_NoSmear_PU_AVE_200_BX_25ns.sh](templates/python/produceSkeletons_D41_NoSmear_PU_AVE_200_BX_25ns.sh) | Phase2C8 | D41 | NoSmear | AVE_200_BX_25ns |
 | [produceSkeletons_D41_VtxSmearedHLLHC_noPU.sh](templates/python/produceSkeletons_D41_VtxSmearedHLLHC_noPU.sh) | Phase2C8 | D41 | VtxSmearedHLLHC | none |
+| [produceSkeletons_D44Nose_NoSmear_PU_AVE_200_BX_25ns.sh](templates/python/produceSkeletons_D44Nose_NoSmear_PU_AVE_200_BX_25ns.sh) | Phase2C6_timing_layer_bar | D44 | NoSmear | AVE_200_BX_25ns |
 
 Whenever you would like to change configuration, change to the `reco_prodtools/templates/python` directory and execute the corresponding script. Then make sure to run `scram b`.
 
@@ -60,6 +61,12 @@ Other options like changing the pileup source, calling --customise on cmsDriver 
         custom="--customise SLHCUpgradeSimulations/Configuration/aging.agedHGCal" \
         geometry=Extended2026D46
 ```
+
+The following script produces the configuration for producing samples with the HFNose sub-detector.
+```shell 
+./produceSkeletons_D44Nose_NoSmear_PU_AVE_200_BX_25ns.sh
+```
+In order to store HF+Nose hits (and switch off HGCAL hits) in the NTUP step, you need to set the option ```detector = cms.string("HFNose")``` in the ```templates/partGun_NTUP_template.py``` configuration file.
 
 ## Available guns and processes
 
