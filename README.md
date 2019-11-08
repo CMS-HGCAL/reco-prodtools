@@ -250,9 +250,9 @@ python SubmitHGCalPGun.py \
 
 Mind that the `multiClusterTag` option needs to be provided for RECO files created before `CMSSW_10_3_X`.
 
-### NTUP step
+### ALL steps
 
-Running the 3 steps together is possible by specifying the ```--datTier ALL``` option.
+Running the 3 steps together in one single submission is possible by specifying the ```--datTier ALL``` option.
 
 ### RelVal
 
