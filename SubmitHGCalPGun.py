@@ -68,7 +68,7 @@ def parseOptions(parser=None, opt=None):
         opt, _ = parser.parse_args()
 
     # sanity check for data tiers
-    dataTiers = ['GSD', 'RECO', 'NTUP']
+    dataTiers = ['GSD', 'RECO', 'NTUP','ALL']
     if opt.DTIER not in dataTiers:
         parser.error('Data tier ' + opt.DTIER + ' is not supported. Exiting...')
         sys.exit()
@@ -93,11 +93,13 @@ def parseOptions(parser=None, opt=None):
         opt.thresholdMax = opt.thresholdMin
 
     # set the default config, if not specified in options
-    if (opt.CONFIGFILE == ''):
+    if (opt.CONFIGFILE == '' and opt.DTIER != 'ALL'):
         opt.CONFIGFILE = 'templates/partGun_'+opt.DTIER+'_template.py'
+    else:
+        opt.CONFIGFILE = 'templates/partGun_GSD_template.py'
 
     # supported queues with the recommended number of events per hour (e.g. ~4events/1nh for GSD, ~8events/1nh for RECO) + sanity check
-    eventsPerHour = {'GSD':4, 'RECO':8, 'NTUP':100}
+    eventsPerHour = {'GSD':4, 'RECO':8, 'NTUP':100, 'ALL':4}
     queues_evtsperjob = {'nextweek':(7*24*eventsPerHour[opt.DTIER]), 'testmatch':(2*24*eventsPerHour[opt.DTIER]), 'tomorrow':(1*24*eventsPerHour[opt.DTIER]), 'workday':(8*eventsPerHour[opt.DTIER]), 'longlunch':(1*eventsPerHour[opt.DTIER]), 'microcentury':(1*eventsPerHour[opt.DTIER]), 'espresso':(1)}
     if opt.QUEUE not in queues_evtsperjob.keys():
         parser.error('Queue ' + opt.QUEUE + ' is not supported. Exiting...')
@@ -246,7 +248,7 @@ def submitHGCalProduction(*args, **kwargs):
     tag = "_".join([opt.TAG, time.strftime("%Y%m%d")])
     if opt.outDir:
         outDir = opt.outDir
-    elif (opt.DTIER == 'GSD'):
+    elif (opt.DTIER == 'GSD' or opt.DTIER == 'ALL' ):
         outDir = "_".join([partGunType, tag]).replace(":", "_")
         if (not os.path.isdir(outDir)):
             processCmd('mkdir -p '+outDir+'/cfg/')
@@ -271,22 +273,23 @@ def submitHGCalProduction(*args, **kwargs):
         processCmd('mkdir -p '+outDir+'/std/')
         processCmd('mkdir -p '+outDir+'/jobs/')
 
-
   # prepare dir for GSD outputs locally or at EOS
     if (opt.LOCAL):
         processCmd('mkdir -p '+outDir+'/'+opt.DTIER+'/')
         recoInputPrefix = 'file:'+currentDir+'/'+opt.inDir+'/'+previousDataTier+'/'
         if (opt.DQM): processCmd('mkdir -p '+outDir+'/DQM/')
     elif opt.eosArea:
-        processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/'+opt.DTIER+'/');
+        if opt.DTIER != 'ALL':
+            processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/'+opt.DTIER+'/');
+        else:
+            processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/NTUP/');
         recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+opt.inDir+'/'+previousDataTier+'/'
         if (opt.DQM): processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/DQM/')
     # in case of relval always take reconInput from /store...
     if DASquery: recoInputPrefix=''
 
     # determine number of jobs for GSD, in case of 'RECO'/'NTUP' only get the input GSD/RECO path
-
-    if (opt.DTIER == 'GSD'):
+    if (opt.DTIER == 'GSD' or opt.DTIER == 'ALL'):
         njobs = int(math.ceil(float(opt.NEVTS)/float(opt.EVTSPERJOB)))
     elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
         inPath = [opt.eosArea+'/'+opt.inDir, currentDir+'/'+opt.inDir][opt.LOCAL]
@@ -301,8 +304,23 @@ def submitHGCalProduction(*args, **kwargs):
 
     # read the template file in a single string
     f_template= open(opt.CONFIGFILE, 'r')
-    template= f_template.read()
+    template=f_template.read()
     f_template.close()
+
+
+    if (opt.DTIER == 'ALL'):
+
+        cfgfile = opt.CONFIGFILE
+
+        cfgfile = cfgfile.replace('GSD','RECO')         
+        fr_template= open(cfgfile, 'r')
+        r_template=fr_template.read()
+        fr_template.close()
+
+        cfgfile = cfgfile.replace('RECO','NTUP')        
+        fn_template= open(cfgfile, 'r')
+        n_template=fn_template.read()
+        fn_template.close()
 
     created_cfgs = []
 
@@ -340,14 +358,18 @@ def submitHGCalProduction(*args, **kwargs):
         print 'Submitting job ' + str(job) + ' out of ' + str(njobs) + submittxt
 
         # prepare the out file and cfg file by replacing DUMMY entries according to input options
+        
+        dtier = opt.DTIER
+        if dtier == 'ALL':
+            dtier = 'GSD'
         if DASquery:
-            basename=outDir+'_'+opt.DTIER+'_'+str(job)
+            basename=outDir+'_'+dtier+'_'+str(job)
         else:
-            basename = commonFileNamePrefix + processDetails+'_x' + str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD']) + cutsApplied + opt.DTIER + '_' + str(job)
+            basename = commonFileNamePrefix + processDetails+'_x' + str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD']) + cutsApplied + dtier + '_' + str(job)
 
         cfgfile = basename +'.py'
         outfile = basename +'.root'
-        outdqmfile = basename.replace(opt.DTIER, 'DQM') +'.root'
+        outdqmfile = basename.replace(dtier, 'DQM') +'.root'
         jobfile = basename +'.sub'
 
         s_template=template
@@ -356,7 +378,7 @@ def submitHGCalProduction(*args, **kwargs):
         s_template=s_template.replace('DUMMYDQMFILENAME',outdqmfile)
         s_template=s_template.replace('DUMMYSEED',str(job))
 
-        if (opt.DTIER == 'GSD'):
+        if (opt.DTIER == 'GSD' or opt.DTIER == 'ALL' ):
             # in case of InCone generation of particles
             if opt.InConeID != '':
                 s_template=s_template.replace('#DUMMYINCONESECTION',InConeSECTION)
@@ -386,7 +408,6 @@ def submitHGCalProduction(*args, **kwargs):
                 s_template=s_template.replace('DUMMYRANDOMSHOOT',str(opt.randomShoot))
                 s_template=s_template.replace('DUMMYNRANDOMPARTICLES',str(opt.NRANDOMPART))
 
-
         elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
             # prepare RECO inputs
             inputFilesListPerJob = inputFilesList[(job-1)*nFilesPerJob:(job)*nFilesPerJob]
@@ -395,8 +416,6 @@ def submitHGCalProduction(*args, **kwargs):
             s_template=s_template.replace('DUMMYINPUTFILELIST',inputFiles)
             s_template=s_template.replace('DUMMYEVTSPERJOB',str(-1))
 
-
-
         if (opt.DTIER == 'NTUP'):
             s_template=s_template.replace('DUMMYRECLUST',str(opt.RECLUST))
             s_template=s_template.replace('DUMMYSGO',str(opt.ADDGENORIG))
@@ -404,17 +423,62 @@ def submitHGCalProduction(*args, **kwargs):
             s_template=s_template.replace('DUMMYSPFC',str(opt.storePFCandidates))
             s_template=s_template.replace('DUMMYMULCLUSTAG', str(opt.MULTICLUSTAG))
 
+        if (opt.DTIER == 'ALL'):
+
+            sr_template=r_template
+            sn_template=n_template
+
+            sr_template=sr_template.replace('DUMMYINPUTFILELIST',"'file:"+outfile+"'")
+            outfile = outfile.replace('GSD','RECO')
+
+            sr_template=sr_template.replace('DUMMYFILENAME',outfile)
+            sr_template=sr_template.replace('DUMMYDQMFILENAME',outdqmfile)
+            sr_template=sr_template.replace('DUMMYSEED',str(job))
+            sr_template=sr_template.replace('DUMMYINPUTFILELIST',outfile)
+            sr_template=sr_template.replace('DUMMYEVTSPERJOB',str(-1))
+
+            sn_template=sn_template.replace('DUMMYINPUTFILELIST',"'file:"+outfile+"'")
+            outfile = outfile.replace('RECO','NTUP')
+            sn_template=sn_template.replace('DUMMYFILENAME',outfile)
+            sn_template=sn_template.replace('DUMMYDQMFILENAME',outdqmfile)
+            sn_template=sn_template.replace('DUMMYSEED',str(job))
+            sn_template=sn_template.replace('DUMMYEVTSPERJOB',str(-1))
+
+            sn_template=sn_template.replace('DUMMYRECLUST',str(opt.RECLUST))
+            sn_template=sn_template.replace('DUMMYSGO',str(opt.ADDGENORIG))
+            sn_template=sn_template.replace('DUMMYSGE',str(opt.ADDGENEXTR))
+            sn_template=sn_template.replace('DUMMYSPFC',str(opt.storePFCandidates))
+            sn_template=sn_template.replace('DUMMYMULCLUSTAG', str(opt.MULTICLUSTAG))
+            
+
+
         # submit job
         # now write the file from the s_template
+        
         cfgfile_path = outDir + '/cfg/' + cfgfile
         write_template= open(cfgfile_path, 'w')
         write_template.write(s_template)
-        write_template.close()
+
+        cfgfiler = 'dummy'      
+        cfgfilen = 'dummy'      
+        
+        if (opt.DTIER == 'ALL'):
+            
+            cfgfiler = cfgfile.replace('GSD','RECO')
+            cfgfiler_path = outDir + '/cfg/' + cfgfiler
+            write_template= open(cfgfiler_path, 'w')
+            write_template.write(sr_template)
+
+            cfgfilen = cfgfile.replace('GSD','NTUP')
+            cfgfilen_path = outDir + '/cfg/' + cfgfilen
+            write_template= open(cfgfilen_path, 'w')
+            write_template.write(sn_template)
 
         write_condorjob= open(outDir+'/jobs/'+jobfile, 'w')
         write_condorjob.write('+JobFlavour = "'+opt.QUEUE+'" \n\n')
         write_condorjob.write('executable  = '+currentDir+'/SubmitFileGSD.sh \n')
-        write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
+        write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+cfgfiler+' '+cfgfilen+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
+
         write_condorjob.write('output      = '+outDir+'/std/'+basename+'.out \n')
         write_condorjob.write('error       = '+outDir+'/std/'+basename+'.err \n')
         write_condorjob.write('log         = '+outDir+'/std/'+basename+'_htc.log \n\n')
