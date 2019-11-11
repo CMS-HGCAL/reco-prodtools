@@ -458,6 +458,7 @@ def submitHGCalProduction(*args, **kwargs):
         cfgfile_path = outDir + '/cfg/' + cfgfile
         write_template= open(cfgfile_path, 'w')
         write_template.write(s_template)
+        write_template.close()
 
         cfgfiler = 'dummy'      
         cfgfilen = 'dummy'      
