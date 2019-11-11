@@ -253,6 +253,7 @@ Mind that the `multiClusterTag` option needs to be provided for RECO files creat
 ### ALL steps
 
 Running the 3 steps together in one single submission is possible by specifying the ```--datTier ALL``` option.
+Please note that if this option is activated only the ```NTUP''' is stored in the output directory.  
 
 ### RelVal
 
