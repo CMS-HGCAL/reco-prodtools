@@ -250,6 +250,11 @@ python SubmitHGCalPGun.py \
 
 Mind that the `multiClusterTag` option needs to be provided for RECO files created before `CMSSW_10_3_X`.
 
+### ALL steps
+
+Running the 3 steps together in one single submission is possible by specifying the ```--datTier ALL``` option.
+Please note that if this option is activated only the ```NTUP''' is stored in the output directory.  
+
 ### RelVal
 
 It can also run directly on RelVal using the same NTUP cfg. It runs das_client internally so you need to have a valid proxy (i.e. run voms-proxy-init before). The output goes in an area (eos/local) named after the RelVal dataset with all '/' replaced by underscores.
