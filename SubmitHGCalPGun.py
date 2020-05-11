@@ -31,7 +31,7 @@ def createParser():
     parser.add_option('', '--zMax',  dest='zMax',  type=float, default=650.0,    help='max. z value')
     parser.add_option('', '--rMin',  dest='rMin',  type=float, default=0.0,  help='min. r value')
     parser.add_option('', '--rMax',  dest='rMax',  type=float, default=300.0,    help='max. r value')
-    parser.add_option('', '--pointing',  action='store_false',  dest='pointing',  default=True,    help='pointing to (0,0,0) in case of closeby gun')
+    parser.add_option('', '--nopointing',  action='store_false',  dest='pointing',  default=True,    help='produce particles parallel to the beampipe instead of pointing to (0,0,0) in case of closeby gun')
     parser.add_option('', '--overlapping',  action='store_true',  dest='overlapping',  default=False,    help='particles will be generated in window [phiMin,phiMax], [rMin,rMax] (true) or with a DeltaPhi=Delta/R (default false) in case of closeby gun')
     parser.add_option('', '--randomShoot',  action='store_true',  dest='randomShoot',  default=False,    help='if true it will randomly choose one particle in the range [1, NParticles +1 ]')
     parser.add_option('', '--nRandomPart',  dest='NRANDOMPART',  type=int,   default=1,      help='This is used together with randomShoot to shoot randomly [1, NParticles +1 ] particles, default is 1')
@@ -312,12 +312,12 @@ def submitHGCalProduction(*args, **kwargs):
 
         cfgfile = opt.CONFIGFILE
 
-        cfgfile = cfgfile.replace('GSD','RECO')         
+        cfgfile = cfgfile.replace('GSD','RECO')
         fr_template= open(cfgfile, 'r')
         r_template=fr_template.read()
         fr_template.close()
 
-        cfgfile = cfgfile.replace('RECO','NTUP')        
+        cfgfile = cfgfile.replace('RECO','NTUP')
         fn_template= open(cfgfile, 'r')
         n_template=fn_template.read()
         fn_template.close()
@@ -358,7 +358,7 @@ def submitHGCalProduction(*args, **kwargs):
         print 'Submitting job ' + str(job) + ' out of ' + str(njobs) + submittxt
 
         # prepare the out file and cfg file by replacing DUMMY entries according to input options
-        
+
         dtier = opt.DTIER
         if dtier == 'ALL':
             dtier = 'GSD'
@@ -449,22 +449,22 @@ def submitHGCalProduction(*args, **kwargs):
             sn_template=sn_template.replace('DUMMYSGE',str(opt.ADDGENEXTR))
             sn_template=sn_template.replace('DUMMYSPFC',str(opt.storePFCandidates))
             sn_template=sn_template.replace('DUMMYMULCLUSTAG', str(opt.MULTICLUSTAG))
-            
+
 
 
         # submit job
         # now write the file from the s_template
-        
+
         cfgfile_path = outDir + '/cfg/' + cfgfile
         write_template= open(cfgfile_path, 'w')
         write_template.write(s_template)
         write_template.close()
 
-        cfgfiler = 'dummy'      
-        cfgfilen = 'dummy'      
-        
+        cfgfiler = 'dummy'
+        cfgfilen = 'dummy'
+
         if (opt.DTIER == 'ALL'):
-            
+
             cfgfiler = cfgfile.replace('GSD','RECO')
             cfgfiler_path = outDir + '/cfg/' + cfgfiler
             write_template= open(cfgfiler_path, 'w')

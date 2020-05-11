@@ -55,7 +55,7 @@ The processing of TICL iterations is added into the RECO fragment by default. To
 
 Other options like changing the pileup source, calling --customise on cmsDriver or changing geometry can be passed with the following script
 
-```shell 
+```shell
 ./produceSkeletons_D41_NoSmear_PU_AVE_200_BX_25ns_aged.sh \
         pileup_input=/eos/cms//store/group/dpg_hgcal/comm_hgcal/deguio/pu_library/V11/GEN-SIM \
         custom="--customise SLHCUpgradeSimulations/Configuration/aging.agedHGCal" \
@@ -63,7 +63,7 @@ Other options like changing the pileup source, calling --customise on cmsDriver 
 ```
 
 The following script produces the configuration for producing samples with the HFNose sub-detector.
-```shell 
+```shell
 ./produceSkeletons_D44Nose_NoSmear_PU_AVE_200_BX_25ns.sh
 ```
 In order to store HF+Nose hits (and switch off HGCAL hits) in the NTUP step, you need to set the option ```detector = cms.string("HFNose")``` in the ```templates/partGun_NTUP_template.py``` configuration file.
@@ -143,7 +143,7 @@ Another gun that could be used is `--gunMode closeby`, which is capable of creat
 With this choice particles can be produced with random energy, R and Z in a specified range. When more than
 one particle are asked to be produced, then each particle will be created at a different vertex,
 equally spaced by Delta, the arc-distance between two consecutive vertices
-over the circle of radius R. Also, there is the `--pointing` option which if used particles will be produced parallel to the beamline,  otherwise they will be pointing to (0,0,0). Furthermore, there is the `--overlapping` option that if used then
+over the circle of radius R. Also, there is the `--nopointing` option: if used, particles will be produced parallel to the beamline; by default, the particles will be pointing to (0,0,0). Furthermore, there is the `--overlapping` option that if used then
 particles will be generated in a window [phiMin,phiMax], [rMin,rMax], otherwise with a DeltaPhi=Delta/R.
 Another option is `--randomShoot` which if used will shoot a random number of particles. However, this option should be used alongside the `--nRandomPart` in order for the gun to know the upper limit on how many particles to shoot. The `--nRandomPart` option shouldn't be confused with the size of the `--partID` option, since with `--partID` we are setting the particles we are interesting in producing, while with `--nRandomPart` we are randomly choosing the number we want to shoot out of those `--partID` ids.
 Apart from producing multiple particles, this gun could also produce a single particle wherever the user wishes, having always the
@@ -253,7 +253,7 @@ Mind that the `multiClusterTag` option needs to be provided for RECO files creat
 ### ALL steps
 
 Running the 3 steps together in one single submission is possible by specifying the ```--datTier ALL``` option.
-Please note that if this option is activated only the ```NTUP''' is stored in the output directory.  
+Please note that if this option is activated only the ```NTUP''' is stored in the output directory.
 
 ### RelVal
 
