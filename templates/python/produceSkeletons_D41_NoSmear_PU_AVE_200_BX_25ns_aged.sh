@@ -38,6 +38,7 @@ action() {
   local geometry="Extended2026D41"
   local pileup_input="das:/RelValMinBias_14TeV/CMSSW_10_6_0_patch2-106X_upgrade2023_realistic_v3_2023D41noPU-v1/GEN-SIM"
   local custom=""
+  local conditions="auto:phase2_realistic"
 
   # parse arguments
   for arg in "$@"; do
@@ -51,6 +52,9 @@ action() {
     elif [[ $arg =~ ^"custom" ]]; then        
         custom=${arg/custom=/}
         echo "Custom options $custom"
+    elif [[ $arg =~ "conditions" ]]; then
+        conditions=${arg/conditions=/}
+        echo "Global tag modified to: $conditions"
     elif [[ $arg =~ ^"pileup_input" ]]; then
         pileup_input=${arg/pileup_input=/}
         #if das is not given try to build the list of files by listing the local directory given
@@ -66,7 +70,7 @@ action() {
   done
 
   cmsDriver.py TTbar_14TeV_TuneCUETP8M1_cfi \
-      --conditions auto:phase2_realistic \
+      --conditions ${conditions} \
       -n 10 \
       --era Phase2C8 \
       --eventcontent FEVTDEBUGHLT \
@@ -82,7 +86,7 @@ action() {
   
 
   cmsDriver.py step3 \
-    --conditions auto:phase2_realistic \
+    --conditions ${conditions} \
     -n 10 \
     --era Phase2C8 \
     --eventcontent FEVTDEBUGHLT,DQM \
@@ -107,7 +111,7 @@ action() {
 
 
   cmsDriver.py step3 \
-    --conditions auto:phase2_realistic \
+    --conditions ${conditions} \
     -n 10 \
     --era Phase2C8 \
     --eventcontent FEVTDEBUGHLT \

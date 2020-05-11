@@ -33,6 +33,9 @@
 action() {
   # default arguments
   local inject_ticl="1"
+  local geometry="Extended2026D41"
+  local custom=""
+  local conditions="auto:phase2_realistic"
 
   # parse arguments
   for arg in "$@"; do
@@ -40,6 +43,15 @@ action() {
       inject_ticl="1"
     elif [ "$arg" = "no-ticl" ]; then
       inject_ticl="0"
+    elif [[ $arg =~ "geometry" ]]; then
+        geometry=${arg/geometry=/}
+        echo "Geometry modified to: $geometry"
+    elif [[ $arg =~ "custom" ]]; then
+        custom=${arg/custom=/}
+        echo "Custom options (full command needed): $custom"
+    elif [[ $arg =~ "conditions" ]]; then
+        conditions=${arg/conditions=/}
+        echo "Global tag modified to: $conditions"
     else
       2>&1 echo "unknown argument: $arg"
       return "1"
@@ -48,27 +60,29 @@ action() {
 
 
   cmsDriver.py SinglePiPt25Eta1p7_2p7_cfi \
-    --conditions auto:phase2_realistic \
+    --conditions ${conditions} \
     -n 10 \
     --era Phase2C8 \
     --eventcontent FEVTDEBUGHLT \
     -s GEN,SIM,DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,HLT:@fake2 \
     --datatier GEN-SIM \
     --beamspot NoSmear \
-    --geometry Extended2026D41 \
+      ${custom} \
+    --geometry ${geometry} \
     --no_exec \
     --python_filename=GSD_fragment.py
 
 
   cmsDriver.py step3 \
-    --conditions auto:phase2_realistic \
+    --conditions ${conditions} \
     -n 10 \
     --era Phase2C8 \
     --eventcontent FEVTDEBUGHLT,DQM \
     --runUnscheduled \
     -s RAW2DIGI,L1Reco,RECO,RECOSIM,VALIDATION:@phase2Validation,DQM:@phase2 \
     --datatier GEN-SIM-RECO,DQMIO \
-    --geometry Extended2026D41 \
+      ${custom} \
+    --geometry ${geometry} \
     --no_exec \
     --python_filename=RECO_fragment.py
 
@@ -86,14 +100,15 @@ action() {
 
 
   cmsDriver.py step3 \
-    --conditions auto:phase2_realistic \
+    --conditions ${conditions} \
     -n 10 \
     --era Phase2C8 \
     --eventcontent FEVTDEBUGHLT \
     --runUnscheduled \
     -s RAW2DIGI,L1Reco,RECO,RECOSIM \
     --datatier GEN-SIM-RECO \
-    --geometry Extended2026D41 \
+      ${custom} \
+    --geometry ${geometry} \
     --no_exec \
     --processName=NTUP \
     --python_filename=NTUP_fragment.py
