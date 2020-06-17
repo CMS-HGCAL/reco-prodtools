@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# intended for developments in CMSSW_11_2_0 cycle
+
+
 # This is the shell script that will generate all the skeletons using cmsDriver commands.
 # The commands included have been taken from runTheMatrix with the following command:
 #
@@ -11,6 +14,7 @@
 # Add python_filename option
 #
 # The first command combines step1 and step2 (GSD):
+# - mix in pileup
 # - run up to DIGI...HLT:@fake2
 # The following changes are implemented on top:
 # --beamspot HLLHC14TeV ➜ --beamspot NoSmear
@@ -33,33 +37,49 @@
 
 action() {
   # default arguments
-  local inject_ticl="1"
+  local inject_ticl="0"
+  local geometry="Extended2026D49"
+  local custom="--customise Configuration/DataProcessing/Utils.addMonitoring"
 
   # parse arguments
   for arg in "$@"; do
-    if [ "$arg" = "ticl" ]; then
+    if [ "$arg" = ^"ticl" ]; then
       inject_ticl="1"
-    elif [ "$arg" = "no-ticl" ]; then
+    elif [ "$arg" = ^"no-ticl" ]; then
       inject_ticl="0"
+    elif [[ $arg =~ ^"geometry" ]]; then        
+        geometry=${arg/geometry=/}
+        echo "Geometry will be modified to $geometry"
+    elif [[ $arg =~ ^"custom" ]]; then        
+        custom=${arg/custom=/}
+        echo "Custom options $custom"
+    elif [[ $arg =~ ^"pileup_input" ]]; then
+        pileup_input=${arg/pileup_input=/}
+        #if das is not given try to build the list of files by listing the local directory given
+        if [[ ${pileup_input} != *"das:"* ]]; then
+            pileup_input=`find ${pileup_input} -iname "*.root" -printf "file:%h/%f,"`
+            pileup_input=${pileup_input::-1}
+        fi
+        echo "Pileup input modified to ${pileup_input}"
     else
       2>&1 echo "unknown argument: $arg"
       return "1"
     fi
   done
 
-
   cmsDriver.py TTbar_14TeV_TuneCUETP8M1_cfi \
-    --conditions auto:phase2_realistic_T15 \
-    -n 10 \
-    --era Phase2C9 \
-    --eventcontent FEVTDEBUGHLT \
-    -s GEN,SIM,DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,HLT:@fake2 \
-    --datatier GEN-SIM \
-    --beamspot HLLHC14TeV \
-    --geometry Extended2026D49 \
-    --no_exec \
-    --python_filename=GSD_fragment.py
-
+      --conditions auto:phase2_realistic_T15 \
+      -n 10 \
+      --era Phase2C9 \
+      --eventcontent FEVTDEBUGHLT \
+      -s GEN,SIM,DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,HLT:@fake2 \
+      --datatier GEN-SIM \
+      --beamspot HLLHC14TeV \
+      ${custom} \
+      --geometry ${geometry} \
+      --no_exec \
+      --python_filename=GSD_fragment.py
+  
 
   cmsDriver.py step3 \
     --conditions auto:phase2_realistic_T15 \
@@ -68,7 +88,7 @@ action() {
     --eventcontent FEVTDEBUGHLT,DQM \
     -s RAW2DIGI,L1Reco,RECO,RECOSIM,VALIDATION:@phase2Validation,DQM:@phase2 \
     --datatier GEN-SIM-RECO,DQMIO \
-    --geometry Extended2026D49 \
+    --geometry ${geometry} \
     --no_exec \
     --python_filename=RECO_fragment.py
 
@@ -92,7 +112,7 @@ action() {
     --eventcontent FEVTDEBUGHLT \
     -s RAW2DIGI,L1Reco,RECO,RECOSIM \
     --datatier GEN-SIM-RECO \
-    --geometry Extended2026D49 \
+    --geometry ${geometry} \
     --no_exec \
     --processName=NTUP \
     --python_filename=NTUP_fragment.py
