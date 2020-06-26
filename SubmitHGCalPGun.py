@@ -95,7 +95,7 @@ def parseOptions(parser=None, opt=None):
     # set the default config, if not specified in options
     if (opt.CONFIGFILE == '' and opt.DTIER != 'ALL'):
         opt.CONFIGFILE = 'templates/partGun_'+opt.DTIER+'_template.py'
-    else:
+    elif opt.CONFIGFILE=='':
         opt.CONFIGFILE = 'templates/partGun_GSD_template.py'
 
     # supported queues with the recommended number of events per hour (e.g. ~4events/1nh for GSD, ~8events/1nh for RECO) + sanity check
