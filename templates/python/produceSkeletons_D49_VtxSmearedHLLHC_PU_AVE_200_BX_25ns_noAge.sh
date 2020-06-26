@@ -39,7 +39,9 @@ action() {
   # default arguments
   local inject_ticl="0"
   local geometry="Extended2026D49"
-  local custom="--customise SLHCUpgradeSimulations/Configuration/aging.customise_aging_3000,Configuration/DataProcessing/Utils.addMonitoring"
+  #local pileup_input="das:/RelValMinBias_14TeV/CMSSW_11_1_0_pre7-110X_mcRun4_realistic_v3_2026D49noPU-v1/GEN-SIM"  # latest phas2 relval made by PdmV, as of June 16
+  local pileup_input="/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/minbias_D49_1120pre1_20200616/GSD"
+  local custom="--customise Configuration/DataProcessing/Utils.addMonitoring"
 
   # parse arguments
   for arg in "$@"; do
@@ -77,6 +79,8 @@ action() {
       --beamspot HLLHC14TeV \
       ${custom} \
       --geometry ${geometry} \
+      --pileup AVE_200_BX_25ns \
+      --pileup_input ${pileup_input} \
       --no_exec \
       --python_filename=GSD_fragment.py
   
