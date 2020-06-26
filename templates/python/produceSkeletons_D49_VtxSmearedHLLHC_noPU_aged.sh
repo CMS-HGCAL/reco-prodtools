@@ -40,7 +40,7 @@ action() {
   local inject_ticl="0"
   local tag=""
   local geometry="Extended2026D49"
-  local custom="--customise SLHCUpgradeSimulations/Configuration/aging.customise_aging_1000,Configuration/DataProcessing/Utils.addMonitoring"
+  local custom="--customise SLHCUpgradeSimulations/Configuration/aging.customise_aging_3000,Configuration/DataProcessing/Utils.addMonitoring"
 
   # parse arguments
   for arg in "$@"; do

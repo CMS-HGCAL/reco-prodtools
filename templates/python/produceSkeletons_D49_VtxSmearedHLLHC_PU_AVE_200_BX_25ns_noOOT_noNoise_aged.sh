@@ -41,7 +41,7 @@ action() {
   local geometry="Extended2026D49"
   #local pileup_input="das:/RelValMinBias_14TeV/CMSSW_11_1_0_pre7-110X_mcRun4_realistic_v3_2026D49noPU-v1/GEN-SIM"  # latest phas2 relval made by PdmV, as of June 16
   local pileup_input="/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/minbias_D49_1120pre1_20200616/GSD"
-  local custom="--customise SLHCUpgradeSimulations/Configuration/aging.customise_aging_3000,Configuration/DataProcessing/Utils.addMonitoring"
+  local custom="--customise SLHCUpgradeSimulations/Configuration/aging.customise_aging_3000,SimCalorimetry/HGCalSimProducers/hgcalDigitizer_cfi.HGCal_ignoreNoise,Configuration/DataProcessing/Utils.addMonitoring"
 
   # parse arguments
   for arg in "$@"; do
@@ -52,9 +52,6 @@ action() {
     elif [[ $arg =~ ^"geometry" ]]; then        
         geometry=${arg/geometry=/}
         echo "Geometry will be modified to $geometry"
-    elif [[ $arg =~ ^"tag" ]]; then        
-        tag=_${arg/tag=/}
-        echo "Fragments wil be tagged with ${tag}"
     elif [[ $arg =~ ^"custom" ]]; then        
         custom=${arg/custom=/}
         echo "Custom options $custom"
@@ -81,11 +78,12 @@ action() {
       --datatier GEN-SIM \
       --beamspot HLLHC14TeV \
       ${custom} \
+      --customise_commands "process.mix.maxBunch = cms.int32(-1) \n process.mix.minBunch = cms.int32(+1)" \
       --geometry ${geometry} \
       --pileup AVE_200_BX_25ns \
       --pileup_input ${pileup_input} \
       --no_exec \
-      --python_filename=GSD_fragment${tag}.py
+      --python_filename=GSD_fragment.py
   
 
   cmsDriver.py step3 \
@@ -97,12 +95,12 @@ action() {
     --datatier GEN-SIM-RECO,DQMIO \
     --geometry ${geometry} \
     --no_exec \
-    --python_filename=RECO_fragment${tag}.py
+    --python_filename=RECO_fragment.py
 
 
   if [ "$inject_ticl" = "1" ]; then
-    echo -e "\ninject ticl into RECO_fragment${tag}.py"
-    ./inject_ticl.sh RECO_fragment${tag}.py
+    echo -e "\ninject ticl into RECO_fragment.py"
+    ./inject_ticl.sh RECO_fragment.py
     if [ "$?" = "0" ]; then
       echo
     else
@@ -122,6 +120,6 @@ action() {
     --geometry ${geometry} \
     --no_exec \
     --processName=NTUP \
-    --python_filename=NTUP_fragment${tag}.py
+    --python_filename=NTUP_fragment.py
 }
 action "$@"
