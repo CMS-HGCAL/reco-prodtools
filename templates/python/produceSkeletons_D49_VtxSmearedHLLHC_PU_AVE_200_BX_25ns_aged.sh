@@ -54,7 +54,7 @@ action() {
         geometry=${arg/geometry=/}
         echo "Geometry will be modified to $geometry"
     elif [[ $arg =~ ^"tag" ]]; then        
-        tag=_${arg/tag/=}
+        tag=_${arg/tag=/}
         echo "Fragments wil be tagged with ${tag}"
     elif [[ $arg =~ ^"custom" ]]; then        
         custom=${arg/custom=/}
