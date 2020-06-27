@@ -49,10 +49,13 @@ action() {
       inject_ticl="1"
     elif [ "$arg" = ^"no-ticl" ]; then
       inject_ticl="0"
-    elif [[ $arg =~ ^"geometry" ]]; then        
+    elif [[ $arg =~ ^"geometry" ]]; then
         geometry=${arg/geometry=/}
         echo "Geometry will be modified to $geometry"
-    elif [[ $arg =~ ^"custom" ]]; then        
+    elif [[ $arg =~ ^"tag" ]]; then
+        tag=_${arg/tag=/}
+        echo "Fragments wil be tagged with ${tag}"
+    elif [[ $arg =~ ^"custom" ]]; then
         custom=${arg/custom=/}
         echo "Custom options $custom"
     elif [[ $arg =~ ^"pileup_input" ]]; then
@@ -83,7 +86,7 @@ action() {
       --pileup AVE_200_BX_25ns \
       --pileup_input ${pileup_input} \
       --no_exec \
-      --python_filename=GSD_fragment.py
+      --python_filename=GSD_fragment${tag}.py
   
 
   cmsDriver.py step3 \
@@ -95,12 +98,12 @@ action() {
     --datatier GEN-SIM-RECO,DQMIO \
     --geometry ${geometry} \
     --no_exec \
-    --python_filename=RECO_fragment.py
+    --python_filename=RECO_fragment${tag}.py
 
 
   if [ "$inject_ticl" = "1" ]; then
-    echo -e "\ninject ticl into RECO_fragment.py"
-    ./inject_ticl.sh RECO_fragment.py
+    echo -e "\ninject ticl into RECO_fragment${tag}.py"
+    ./inject_ticl.sh RECO_fragment${tag}.py
     if [ "$?" = "0" ]; then
       echo
     else
@@ -120,6 +123,6 @@ action() {
     --geometry ${geometry} \
     --no_exec \
     --processName=NTUP \
-    --python_filename=NTUP_fragment.py
+    --python_filename=NTUP_fragment${tag}.py
 }
 action "$@"
