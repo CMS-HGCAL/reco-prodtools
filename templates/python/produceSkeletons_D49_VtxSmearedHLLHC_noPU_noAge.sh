@@ -40,7 +40,7 @@ action() {
   local inject_ticl="0"
   local tag=""
   local geometry="Extended2026D49"
-  local custom="--customise Configuration/DataProcessing/Utils.addMonitoring"
+  local custom="--customise SimCalorimetry/HGCalSimProducers/hgcalDigitizer_cfi.HGCal_ignoreFluence,Configuration/DataProcessing/Utils.addMonitoring"
 
   # parse arguments
   for arg in "$@"; do
