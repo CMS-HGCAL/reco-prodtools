@@ -42,7 +42,7 @@ action() {
   local geometry="Extended2026D49"
   #local pileup_input="das:/RelValMinBias_14TeV/CMSSW_11_1_0_pre7-110X_mcRun4_realistic_v3_2026D49noPU-v1/GEN-SIM"  # latest phas2 relval made by PdmV, as of June 16
   local pileup_input="/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/minbias_D49_1120pre1_20200616/GSD"
-  local custom="--customise Configuration/DataProcessing/Utils.addMonitoring"
+  local custom="--customise SimCalorimetry/HGCalSimProducers/hgcalDigitizer_cfi.HGCal_ignoreFluence,Configuration/DataProcessing/Utils.addMonitoring"
 
   # parse arguments
   for arg in "$@"; do
