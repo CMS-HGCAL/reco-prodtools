@@ -82,7 +82,7 @@ action() {
       --datatier GEN-SIM \
       --beamspot HLLHC14TeV \
       ${custom} \
-      --customise_commands "process.mix.maxBunch = cms.int32(-1) \n process.mix.minBunch = cms.int32(+1)" \
+      --customise_commands "process.mix.maxBunch = cms.int32(0) \n process.mix.minBunch = cms.int32(0)" \
       --geometry ${geometry} \
       --pileup AVE_200_BX_25ns \
       --pileup_input ${pileup_input} \
