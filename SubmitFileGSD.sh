@@ -48,7 +48,10 @@ if [ ${localFlag} == "True" ]
         cp *DQM*.root ${curDir}/${outDir}/DQM/
     fi
   else
-    xrdcp -N -v *${dataTier}*.root root://eoscms.cern.ch/${eosArea}/${outDir}/${dataTier}/
+    a=`ls *.root`
+    echo "Will copy ${a} to output directory in EOS"
+    xrdcp -N -v ${a} root://eoscms.cern.ch/${eosArea}/${outDir}/${dataTier}/Events_${clusterid}_${procid}.root
+    #xrdcp -N -v *${dataTier}*.root root://eoscms.cern.ch/${eosArea}/${outDir}/${dataTier}/
     if [ ${keepDQMfile} == "True" ]
         then
         xrdcp -N -v *DQM*.root root://eoscms.cern.ch/${eosArea}/${outDir}/DQM/
