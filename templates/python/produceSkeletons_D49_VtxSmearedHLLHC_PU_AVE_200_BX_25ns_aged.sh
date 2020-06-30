@@ -84,6 +84,7 @@ action() {
       --geometry ${geometry} \
       --pileup AVE_200_BX_25ns \
       --pileup_input ${pileup_input} \
+      --fileout GSD.root \
       --no_exec \
       --python_filename=GSD_fragment${tag}.py
   
@@ -96,6 +97,7 @@ action() {
     -s RAW2DIGI,L1Reco,RECO,RECOSIM,VALIDATION:@phase2Validation,DQM:@phase2 \
     --datatier GEN-SIM-RECO,DQMIO \
     --geometry ${geometry} \
+    --fileout RECO.root \
     --no_exec \
     --python_filename=RECO_fragment${tag}.py
 
@@ -120,6 +122,7 @@ action() {
     -s RAW2DIGI,L1Reco,RECO,RECOSIM \
     --datatier GEN-SIM-RECO \
     --geometry ${geometry} \
+    --fileout NTUP.root \
     --no_exec \
     --processName=NTUP \
     --python_filename=NTUP_fragment${tag}.py
