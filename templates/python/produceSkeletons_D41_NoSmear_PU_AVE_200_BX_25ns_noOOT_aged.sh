@@ -61,16 +61,17 @@ action() {
     elif [[ $arg =~ ^"pileup_input" ]]; then
         pileup_input=${arg/pileup_input=/}
         #if das is not given try to build the list of files by listing the local directory given
-        if [[ ${pileup_input} != *"das:"* ]]; then
-            pileup_input=`find ${pileup_input} -iname "*.root" -printf "file:%h/%f,"`
-            pileup_input=${pileup_input::-1}
-        fi
         echo "Pileup input modified to ${pileup_input}"
     else
       2>&1 echo "unknown argument: $arg"
       return "1"
     fi
   done
+  
+  if [[ ${pileup_input} != *"das:"* ]]; then
+      pileup_input=`find ${pileup_input} -iname "*.root" -printf "file:%h/%f,"`
+      pileup_input=${pileup_input::-1}
+  fi
 
   cmsDriver.py TTbar_14TeV_TuneCUETP8M1_cfi \
       --conditions auto:phase2_realistic_T15 \
