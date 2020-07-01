@@ -71,6 +71,12 @@ action() {
     fi
   done
 
+  if [[ ${pileup_input} != *"das:"* ]]; then
+      echo "expanding local directory of input pileup to list all local files"
+      pileup_input=`find ${pileup_input} -iname "*.root" -printf "file:%h/%f,"`
+      pileup_input=${pileup_input::-1}
+  fi
+
   cmsDriver.py TTbar_14TeV_TuneCUETP8M1_cfi \
       --conditions auto:phase2_realistic_T15 \
       -n 100 \
