@@ -8,8 +8,12 @@ process.maxEvents.input = cms.untracked.int32(DUMMYEVTSPERJOB)
 process.source.fileNames = cms.untracked.vstring(DUMMYINPUTFILELIST)
 
 # Output definition
-process.FEVTDEBUGHLToutput.fileName = cms.untracked.string('file:DUMMYFILENAME')
-process.DQMoutput.fileName = cms.untracked.string('file:DUMMYDQMFILENAME')
+if hasattr(process,"FEVTDEBUGHLToutput"):
+    process.FEVTDEBUGHLToutput.fileName = cms.untracked.string('file:DUMMYFILENAME')
+else:
+    process.FEVTDEBUGoutput.fileName = cms.untracked.string('file:DUMMYFILENAME')
+if hasattr(process, "DQMoutput"):
+    process.DQMoutput.fileName = cms.untracked.string('file:DUMMYDQMFILENAME')
 
 # Customisation from command line
 # process.hgcalLayerClusters.minClusters = cms.uint32(3)
