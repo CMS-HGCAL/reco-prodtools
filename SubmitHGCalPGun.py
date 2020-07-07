@@ -8,6 +8,8 @@ import time
 import math
 import re
 
+from random import randint
+
 eosExec = 'eos'
 
 def createParser():
@@ -376,7 +378,10 @@ def submitHGCalProduction(*args, **kwargs):
 
         s_template=s_template.replace('DUMMYFILENAME',outfile)
         s_template=s_template.replace('DUMMYDQMFILENAME',outdqmfile)
-        s_template=s_template.replace('DUMMYSEED',str(job))
+        # avoid same seed for the same job number
+        s_template=s_template.replace('DUMMYSEED',str(job+ (randint(0, 1000)*1000)) )
+        if opt.TAG:
+            s_template=s_template.replace('from reco_prodtools.templates.GSD_fragment import process','from reco_prodtools.templates.GSD_fragment_%s import process'%opt.TAG)
 
         if (opt.DTIER == 'GSD' or opt.DTIER == 'ALL' ):
             # in case of InCone generation of particles
