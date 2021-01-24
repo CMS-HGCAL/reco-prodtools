@@ -56,6 +56,7 @@ def createParser():
     parser.add_option('', '--storePFCandidates',  action='store_true', dest='storePFCandidates',  default=False, help='store PFCandidates collection')
     parser.add_option('', '--multiClusterTag',  action='store', dest='MULTICLUSTAG', default="hgcalMultiClusters", help='name of HGCalMultiCluster InputTag - use hgcalLayerClusters before CMSSW_10_3_X')
     parser.add_option('', '--keepDQMfile',  action='store_true', dest='DQM',  default=False, help='store the DQM file in relevant folder locally or in EOS, default is False.')
+    parser.add_option('', '--requestGPUs',  action='store_true', dest='GPU',  default=False, help='if used then it is set to True and will use in condor GPU machines, default is False. Keep in mind that GPU machines are limited in contrary to CPU.')
 
     return parser
 
@@ -483,6 +484,7 @@ def submitHGCalProduction(*args, **kwargs):
         write_condorjob.write('output      = '+outDir+'/std/'+basename+'.out \n')
         write_condorjob.write('error       = '+outDir+'/std/'+basename+'.err \n')
         write_condorjob.write('log         = '+outDir+'/std/'+basename+'_htc.log \n\n')
+        if (opt.GPU): write_condorjob.write('request_GPUs = 1\n') 
         write_condorjob.write('max_retries = 1\n')
         write_condorjob.write('queue \n')
         write_condorjob.close()
