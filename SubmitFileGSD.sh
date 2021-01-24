@@ -19,7 +19,7 @@ keepDQMfile=${14}
 
 ##Create Work Area
 export SCRAM_ARCH=${CMSSWARCH}
-source /afs/cern.ch/cms/cmsset_default.sh
+source /cvmfs/cms.cern.ch/cmsset_default.sh
 eval `scramv1 project CMSSW ${CMSSWVER}`
 cd ${CMSSWVER}/
 rm -rf ./*
